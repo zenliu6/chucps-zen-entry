@@ -10,8 +10,16 @@
       "title": "雷射實驗室",
       "url": "https://zenliu6.github.io/chucps-zen-entry/lasergame/",
       "desc": "自然課雷射小遊戲",
-      "icon": "",
+      "icon": "💡",
       "cat": "自然"
+    },
+    {
+      "id": "i1794322540712",
+      "title": "抽獎轉盤",
+      "url": "https://zenliu6.github.io/chucps-zen-entry/luckywheel/",
+      "desc": "",
+      "icon": "🎁",
+      "cat": "工具"
     }
   ]
 }
