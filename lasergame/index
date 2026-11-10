@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>光之實驗室：雷射反射挑戰</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;800&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#0b131c;--bench:#122030;--line:#27394c;--ink:#e8f0f7;--dim:#8fa4b8;--laser:#ff5a3c;--gem:#ffc857;--ok:#62e3a4;--btn:#182839;box-sizing:border-box;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;overflow:hidden;touch-action:manipulation;-webkit-touch-callout:none;background:var(--bg);color:var(--ink);font:500 15px/1.6 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;-webkit-user-select:none;user-select:none}
+#app{height:100%;display:flex;flex-direction:column;gap:8px;padding:8px 12px}
+header{display:flex;align-items:center;gap:8px;margin:0}
+header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.04em;flex:1;min-width:0}
+header h1 small{display:block;font-size:12px;font-weight:500;color:var(--dim);letter-spacing:0}
+button{font:inherit;color:var(--ink);background:var(--btn);border:1px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer;transition:transform .1s,border-color .15s}
+button:hover:not(:disabled){border-color:#4b6a89}button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gem);outline-offset:2px}
+.pill{color:var(--gem);font-weight:800;padding:7px 4px}
+#stage{display:flex;justify-content:center}
+canvas{display:block;border-radius:14px;border:1px solid var(--line);touch-action:none;cursor:pointer;box-shadow:0 14px 40px #0008}
+#say{min-height:3.2em;margin:10px 2px 6px;color:#cfe0ee;font-size:14px}
+#bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#bar .grow{flex:1}
+#left{font-weight:800;color:#cfeaf7;padding:0 6px}
+#left i{display:inline-block;width:14px;height:4px;margin-left:4px;border-radius:2px;background:#cfeaf7;transform:rotate(-35deg);vertical-align:middle}
+#ang{color:var(--gem);font-size:13px;min-width:7em}.tools{display:flex;gap:4px}.tools button{padding:7px 9px}#left i.u{background:#2a3d52}
+button.on{border-color:var(--laser);color:#ffb3a3}
+dialog{border:1px solid var(--line);background:#0f1b28;color:var(--ink);border-radius:16px;padding:20px;width:min(92vw,460px);max-height:88svh;overflow:auto}
+dialog::backdrop{background:#02060bcc}
+dialog h2{margin:0 0 4px;font-size:22px}
+.stars{font-size:30px;color:var(--gem);letter-spacing:.1em}
+.note{background:#0a1520;border-left:3px solid var(--gem);padding:10px 14px;margin:12px 0;border-radius:4px;font-size:14px}
+.note b{color:var(--gem)}
+.opts{display:grid;gap:6px;margin-top:8px}
+.opts button.ok{border-color:var(--ok);background:#12382c}.opts button.no{border-color:var(--laser);background:#3a1a16}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.go{background:var(--laser);border-color:var(--laser);color:#1b0803;font-weight:800}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+#grid button{text-align:left;padding:8px 10px;line-height:1.35}
+#grid span{display:block;font-size:12px;color:var(--gem)}
+@media(max-width:480px){#grid{grid-template-columns:repeat(2,1fr)}header h1{font-size:17px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+#main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}#stage{flex:1;min-height:0;min-width:0;display:flex;justify-content:center;align-items:center}#side{flex:none}#say{min-height:2.8em;margin:0 2px 6px}button{min-height:42px}.pill{min-height:0}#left i{margin-left:3px}#rotmsg{display:none;text-align:center;color:var(--gem);font-size:14px}@media (orientation:portrait) and (min-width:700px){#rotmsg{display:block}}@media (orientation:landscape) and (min-width:700px){#main{flex-direction:row;gap:12px}#side{width:300px;display:flex;flex-direction:column;overflow-y:auto}#say{flex:none;min-height:5.2em;font-size:15px}#bar{display:grid;grid-template-columns:1fr 1fr;gap:8px}#left,#ang{grid-column:1/-1;padding:0}#bar .grow{display:none}.tools{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.tools button{padding:0}#bar button{min-height:48px}header button{min-height:44px}}</style>
+</head>
+<body>
+<div id="app">
+ <header>
+  <h1>光之實驗室<small id="sub"></small></h1>
+  <span class="pill" id="tot" title="累積星星">★ 0/36</span>
+  <button id="prev" aria-label="上一關">‹</button><button id="next" aria-label="下一關">›</button>
+  <button id="menu">關卡</button>
+ </header><div id="rotmsg">請將 iPad 橫放，畫面會更大、操作更順手。</div>
+ <div id="main"><div id="stage"><canvas id="cv" aria-label="雷射反射遊戲畫面"></canvas></div>
+ <div id="side"><div id="say" aria-live="polite"></div>
+ <div id="bar">
+  <span id="left"></span><span id="ang"></span><span class="grow"></span>
+  <span class="tools"><button class="rot" data-d="-5">−5°</button><button class="rot" data-d="-1">−1°</button><button class="rot" data-d="1">+1°</button><button class="rot" data-d="5">+5°</button><button id="del">刪除</button></span><button id="hint">提示</button><button id="reset">重來</button>
+  <button id="obs" class="on">觀察線</button><button id="snd" aria-label="音效">音效開</button>
+ </div></div></div>
+</div>
+<dialog id="dMenu"><h2>選擇實驗</h2><div id="grid"></div><div class="row"><button id="closeMenu">關閉</button></div></dialog>
+<dialog id="dWin"><h2 id="wt">實驗成功！</h2><div class="stars" id="ws"></div><div id="wd" style="color:var(--dim);font-size:13px"></div>
+ <div class="note"><b>科學小筆記</b><br><span id="wn"></span></div>
+ <div id="quiz"></div>
+ <div class="row"><button id="stay">留在這關</button><button id="again">再玩一次</button><button class="go" id="goNext">下一關</button></div>
+</dialog>
+<script>
+const DATA=[{"k":1,"E":[1,1,17],"R":[8.5,6.5,-122],"walls":[],"fixed":[],"s":[[6,2.5,37]],"gems":[[3.5,1.75],[7.25,4.5]]},{"k":2,"E":[1,6.5,-49],"R":[9,1,120],"walls":[[5,0,1,3]],"fixed":[],"s":[[4,3,-11],[7,4.5,-17]],"gems":[[2.5,4.75],[8,2.75]]},{"k":2,"E":[0.7,4,-33],"R":[8.5,6.5,-90],"walls":[[3,3,3,2]],"fixed":[],"s":[[4.5,1.5,-6],[8.5,3,55]],"gems":[[2.6,2.75],[6.5,2.25]]},{"k":2,"E":[1,1.5,9],"R":[1.5,5,11],"walls":[[3,3,2,2]],"fixed":[],"s":[[7.5,2.5,57],[6.5,6,149]],"gems":[[4.9,2.1],[4,5.5]]},{"k":3,"E":[0.8,0.8,9],"R":[9,3,124],"walls":[[5,3,2,1]],"fixed":[],"s":[[5,1.5,69],[3,4,78],[7,6,-15]],"gems":[[2.9,1.15],[4,2.75],[8,4.5]]},{"k":2,"E":[1,6.5,-40],"R":[5,7,-30],"walls":[[2,1,1,3]],"fixed":[[4,4,-40]],"s":[[7,1.5,13],[8.5,5,109]],"gems":[[5.5,2.75],[7.75,3.25],[6.75,6]]},{"k":4,"E":[1,4,-8],"R":[9,1.5,180],"walls":[[4,4,2,1]],"fixed":[],"s":[[8,3,45],[7.5,6.5,142],[2.5,6,-129],[3,1.5,-42]],"gems":[[5.9,3.3],[5,6.25],[6,1.5]]},{"k":3,"E":[1,6.5,-14],"R":[8.5,6.5,-90],"walls":[[3,0,1,5],[6,3,1,5]],"fixed":[],"s":[[5,5.5,-52],[5,1.5,-45],[8.5,1.5,45]],"gems":[[5,3.5],[8.5,4]]},{"k":4,"E":[9,0.8,175],"R":[4.5,3.5,-14],"walls":[[4,4,3,1]],"fixed":[],"s":[[1,1.5,130],[1.5,6.5,40],[8,6,-43],[8.5,2.5,-138]],"gems":[[5,1.15],[4.75,6.25],[8.25,4.25],[6.5,3]]},{"k":2,"E":[5,4,141],"R":[8,1.5,79],"walls":[[2,7,3,1],[6,1,1,2],[2,2,1,1]],"fixed":[],"s":[[2.5,6,73],[9,6.5,-48]],"gems":[[4.1,4.72],[8.41,3.55]]},{"k":2,"E":[2.5,7,-97],"R":[6.5,5.5,-56],"walls":[[3,0,1,1],[4,5,1,2],[0,5,1,2]],"fixed":[],"s":[[2,3,-51],[8.5,2.5,60]],"gems":[[2.21,4.68],[4.34,2.82],[7.76,3.61]]},{"k":3,"E":[5,3.5,-90],"R":[7.5,1,75],"walls":[[6,2,1,2],[2,0,1,1],[0,6,2,1]],"fixed":[],"s":[[5,1,-160],[2,4.5,73],[9,6.5,-45]],"gems":[[5,2.38],[8.47,4.58]]},{"k":3,"E":[1.5,1,75],"R":[9,1.5,121],"walls":[[5,0,1,2],[6,6,2,1]],"fixed":[],"s":[[3,6.5,6],[4,4.5,-36],[7.5,4,-34]],"gems":[[2.27,3.81],[3.36,5.78]]},{"k":3,"E":[9,7,-130],"R":[9,3,-164],"walls":[[8,1,1,1],[2,6,3,1],[9,4,1,1]],"fixed":[],"s":[[6.5,4,-150],[1,3,-117],[2,1,-24]],"gems":[[7.5,5.2],[3.92,3.53]]},{"k":2,"E":[7,1.5,-173],"R":[8.5,6,172],"walls":[[0,5,1,1],[5,3,3,1],[0,1,1,3]],"fixed":[[5,6.5,18]],"s":[[3,1,139],[3,4.5,68]],"gems":[[4.6,1.2],[3,2.96],[3.82,5.32]]},{"k":4,"E":[3.5,2,-7],"R":[8,6,-68],"walls":[[6,7,1,1],[3,0,1,1],[1,2,1,1],[6,5,1,1]],"fixed":[],"s":[[7.5,1.5,61],[3.5,6.5,168],[1.5,5.5,-84],[9,3.5,48]],"gems":[[6.06,3.3],[2.22,5.86],[8.64,4.4]]},{"k":2,"E":[9,7,-158],"R":[2.5,6,-117],"walls":[[4,1,1,2],[1,0,1,1],[4,5,1,3],[8,0,1,3]],"fixed":[[6,3.5,-144]],"s":[[6.5,6,-130],[1.5,4,119]],"gems":[[7.7,6.48],[6.3,5.03],[4.2,3.7]]},{"k":4,"E":[8,7,-72],"R":[1,3,-53],"walls":[[4,7,3,1],[4,5,1,1],[0,5,1,1],[3,2,1,2]],"fixed":[],"s":[[9,4,-126],[5,4,-113],[8,1,-113],[2.5,1,153]],"gems":[[8.52,5.44],[6.64,4],[1.72,2.04]]},{"k":4,"E":[6,6,-135],"R":[5.5,2,11],"walls":[[5,3,2,1],[0,1,1,3],[3,5,1,1],[9,4,1,2]],"fixed":[],"s":[[3,3,169],[1.5,6.5,59],[7.5,7,-39],[8,2.5,-126]],"gems":[[4.5,6.75],[7.76,4.62]]},{"k":4,"E":[6.5,6.5,-77],"R":[2,5.5,-103],"walls":[[2,2,2,1],[3,5,2,1],[4,7,1,1]],"fixed":[],"s":[[7.5,2,-147],[5.5,3.5,-164],[4.5,1,-146],[1,1,129]],"gems":[[6.5,2.75],[5.06,2.4]]},{"k":4,"E":[8,1.5,-169],"R":[1,6.5,-72],"walls":[[0,2,1,1],[6,2,1,2],[9,4,1,3],[9,1,1,2]],"fixed":[[5.5,1,159]],"s":[[4,3,86],[6.5,5.5,99],[4.5,6.5,-168],[2,3.5,169]],"gems":[[6.85,1.27],[5.64,5.93],[1.37,5.39]]},{"k":3,"E":[2,5,-16],"R":[8.5,1.5,82],"walls":[[1,6,1,1],[5,0,1,3],[0,0,1,1],[2,0,2,1],[6,7,2,1]],"fixed":[[1.5,2,137]],"s":[[5.5,4,-85],[3.5,7,24],[9,5,-59]],"gems":[[2.32,4.05],[6.58,5.88],[8.73,3.11]]},{"k":4,"E":[5.5,5,-34],"R":[1,7,-90],"walls":[[9,4,1,1],[0,0,1,2],[9,6,1,1],[2,5,1,3]],"fixed":[[4.5,6,-3]],"s":[[8.5,3,-100],[2.5,1.5,130],[6,1.5,-139],[1,4,122]],"gems":[[3.22,3.12],[4.1,2.45],[1,5.35]]},{"k":5,"E":[1,1.5,17],"R":[4,7,-39],"walls":[[4,0,3,1],[1,3,1,2],[9,4,1,1],[5,7,3,1]],"fixed":[],"s":[[6,3,40],[7.5,6,119],[1.5,6.5,-115],[3.5,4.5,-18],[6.5,5,75]],"gems":[[3.8,2.34],[6.62,4.23],[2.46,5.54],[4.92,6.26]]},{"k":5,"E":[7.5,3.5,162],"R":[4,7,-98],"walls":[[9,6,1,2],[5,7,3,1],[5,5,1,1],[0,1,1,2]],"fixed":[],"s":[[1.5,5.5,-141],[2,1,-40],[9,1.5,47],[9,5,143],[3.5,3.5,139]],"gems":[[4.74,4.42],[1.77,3.11],[9,3.77],[3.78,5.46]]},{"k":5,"E":[4,5.5,11],"R":[8.5,3.5,90],"walls":[[2,7,1,1],[0,2,1,1],[5,4,1,1],[9,0,1,1],[5,7,1,1]],"fixed":[[1.5,5.5,65]],"s":[[6.5,6,-36],[7,1.5,-129],[1,1,115],[3,3,83],[8.5,6.5,-41]],"gems":[[5.3,5.76],[2.28,2.28],[8.5,5.39]]},{"k":5,"E":[1.5,6,-81],"R":[5.5,6.5,-90],"walls":[[9,5,1,3],[6,0,1,1],[0,1,2,1],[9,1,1,2],[3,6,1,1]],"fixed":[],"s":[[2,3,-43],[8,2.5,49],[7,7,159],[3.5,4.5,-95],[5.5,2.5,23]],"gems":[[1.7,4.8],[5.48,2.71],[7.43,5.06]]},{"k":6,"E":[5,1.5,106],"R":[1.5,1.5,77],"walls":[[5,7,3,1],[0,4,1,1],[3,0,1,3],[0,7,1,1],[8,5,1,1]],"fixed":[],"s":[[4,5,45],[9,3.5,-64],[8,1,-168],[5.5,3.5,94],[7,5.5,113],[2.5,6,-144]],"gems":[[4.59,2.93],[6.31,4.58],[2.11,4.25]]},{"k":6,"E":[2.5,7,0],"R":[7,3.5,-27],"walls":[[9,0,1,1],[0,7,1,1],[7,1,1,1],[3,5,1,1],[0,1,1,1]],"fixed":[],"s":[[7.5,7,-65],[2.5,1,167],[1.5,5,36],[5.5,2.5,8],[9,6.5,-21],[9,2.5,-148]],"gems":[[4.7,7],[4.7,3.64],[2.12,2.52],[9,4.22]]},{"k":6,"E":[2,5,22],"R":[8,2,90],"walls":[[9,0,1,2],[4,7,1,1],[8,7,1,1],[9,3,1,1],[6,2,1,1]],"fixed":[],"s":[[7,7,-45],[4.5,1,-172],[2.5,3.5,104],[3,6,14],[5,3.5,-9],[8,5.5,-28]],"gems":[[4.05,5.82],[3.78,5.03],[6.38,4.42],[8,4]]}];
+const META=[
+{n:"第一道光",t:"點空白處放鏡子；拖曳鏡子兩端的圓點可以旋轉，拖曳鏡身可以搬動。",c:"光在空氣中沿直線前進；遇到鏡子就被反射，改變方向。"},
+{n:"轉動鏡子",t:"黑牆擋住了去路，轉動兩面鏡子繞過去。",c:"鏡子轉動 θ 度，反射光會轉動 2θ 度，所以微調鏡子就能大幅改變光的去向。",q:["鏡子轉動 10°，反射光會轉動幾度？",["5°","10°","20°"],2,"反射光轉動的角度是鏡子轉動角度的 2 倍。"]},
+{n:"反射定律",t:"打開「觀察線」，看看入射角與反射角。",c:"反射定律：入射角等於反射角，兩個角都從法線（垂直鏡面的虛線）量起。",q:["光線與法線夾 30° 射到鏡面，反射光與法線夾幾度？",["30°","60°","90°"],0,"入射角＝反射角，所以也是 30°。"]},
+{n:"折返",c:"兩面鏡子可以讓光轉回頭。光走過的路也能倒著走回去，這叫光路可逆。"},
+{n:"之字形",c:"光只走直線，但每次反射都能轉彎，所以能避開障礙。",q:["光被不透明的牆擋住，會形成什麼？",["拐彎繞過去","影子","變慢再通過"],1,"光走直線，被擋住的地方就是影子。"]},
+{n:"固定鏡",t:"灰色鏡子是固定的，要搭配它來放自己的鏡子。",c:"平面鏡裡的像和本人一樣大，像到鏡面的距離等於本人到鏡面的距離。",q:["站在鏡前 1 公尺，鏡中的像離你多遠？",["1公尺","2公尺","0.5公尺"],1,"像在鏡後 1 公尺，所以和你相距 2 公尺。"]},
+{n:"光束交叉",c:"兩道光交叉時會互相穿過，不會彼此推開或彈開。",q:["兩道手電筒的光在空中交叉後會怎樣？",["互相彈開","各自繼續前進","合成一道"],1,"光束互不干擾，交叉後各走各的。"]},
+{n:"穿過縫隙",c:"光走直線，所以穿過縫隙的光仍沿直線前進；被擋住的地方就是影子。"},
+{n:"螺旋",c:"不論反射幾次，每次入射角都等於反射角。太陽能電廠就用許多鏡子，把陽光反射集中到同一座塔。"},
+{"n":"三角路線","c":"光走過的每一段都是直線，轉彎只發生在鏡子的表面。"},
+{"n":"同一個平面","c":"入射光、反射光和法線，都在同一個平面上。"},
+{"n":"看見物體","c":"我們看得見不發光的物體，是因為物體把光反射到我們的眼睛裡。","q":["為什麼看得到不會發光的書本？",["書本反射光到眼睛","書本自己會發光","眼睛會發出光"],0,"物體反射的光進入眼睛，我們才看得到它。"]},
+{"n":"漫反射","c":"牆壁和紙張表面粗糙，反射光朝四面八方，所以從各個角度都看得到。"},
+{"n":"左右相反","c":"鏡中的像左右相反，但上下不會顛倒。","q":["在鏡子前面寫一個「E」，鏡中的字會怎樣？",["上下顛倒","左右相反","完全不變"],1,"平面鏡的像左右相反。"]},
+{"n":"光的速度","c":"光的速度非常快，每秒約 30 萬公里。","q":["光 1 秒大約能繞地球幾圈？",["7 圈半","100 圈","1 圈"],0,"光每秒約 30 萬公里，可繞地球約 7 圈半。"]},
+{"n":"回程路線","c":"光從 A 經鏡子走到 B，反過來從 B 出發，也會沿原路走回 A。"},
+{"n":"後視鏡","c":"汽車的後視鏡用鏡子改變視線方向，讓駕駛看到後方的車輛。"},
+{"n":"潛望鏡升級","c":"潛望鏡用兩面平行的鏡子，讓光轉兩次彎，看到障礙物另一邊的景物。","q":["潛望鏡裡的兩面鏡子要怎麼擺？",["互相平行","互相垂直","隨便擺"],0,"兩面平行的鏡子，光進出的方向才會相同。"]},
+{"n":"萬花筒","c":"萬花筒裡有幾片鏡子，光經過多次反射，就形成許多對稱的圖案。"},
+{"n":"雷射筆","c":"雷射光很集中、不容易散開，但絕對不可以照別人的眼睛。","q":["使用雷射筆時，哪個做法正確？",["不照眼睛","照同學的眼睛","越近看越清楚"],0,"雷射光很強，照到眼睛會受傷。"]},
+{"n":"太陽能電廠","c":"太陽能電廠用許多鏡子，把陽光反射到同一個地方，把水加熱來發電。"},
+{"n":"影子","c":"日蝕、月蝕和影子，都是光走直線的證明。","q":["中午太陽很高時，影子比早上？",["短","長","一樣"],0,"太陽越高，影子越短。"]},
+{"n":"折疊光路","c":"望遠鏡用鏡子把光折疊起來，讓鏡筒可以做得比較短。"},
+{"n":"推算角度","c":"知道鏡子的角度，就能算出反射光的方向；反過來也能算出鏡子該擺的角度。","q":["想讓光剛好轉 90°，鏡面要和入射光夾幾度？",["45°","90°","30°"],0,"鏡面與入射光夾 45°，反射光就轉 90°。"]},
+{"n":"微調的力量","c":"鏡子轉 θ 度，反射光轉 2θ 度，所以角度只要差一點點，光就會差很多。","q":["鏡子轉動 15°，反射光會轉動幾度？",["7.5°","15°","30°"],2,"反射光轉動的角度是鏡子的 2 倍。"]},
+{"n":"反光片","c":"腳踏車的反光片由許多小鏡面組成，能把車燈的光反射回去，讓駕駛看見。"},
+{"n":"光的迷宮","c":"每一次反射都遵守同樣的定律，再複雜的光路也能一步一步推理。"},
+{"n":"逆推法","c":"遇到難題，可以從終點往回推。光路可逆，從接收器反向追光線就能找到路。"},
+{"n":"精準調整","c":"科學實驗需要精準的角度，善用微調按鈕，才能讓光準確到達目標。"},
+{"n":"光學大師","c":"恭喜你！你已經掌握光的直線傳播、反射定律和光路可逆。"}
+];
+const $=s=>document.querySelector(s),cv=$("#cv"),ctx=cv.getContext("2d");
+const W=10,H=8,D2R=Math.PI/180;
+//<pure>
+const HL=.45,RR=.34;
+function trace(P,pm){const ms=P.fixed.map(([x,y,a])=>({x,y,a,f:1})).concat(pm);
+ let ox=P.E[0],oy=P.E[1],ra=P.E[2]*Math.PI/180,dx=Math.cos(ra),dy=Math.sin(ra);
+ const pts=[[ox,oy]],got=new Set(),bs=[];let hit=false,len=0,last=-1;
+ const sg=ms.map(m=>{const r=m.a*Math.PI/180,cx=Math.cos(r),cy=Math.sin(r);return{m,ax:m.x-cx*HL,ay:m.y-cy*HL,ex:2*cx*HL,ey:2*cy*HL,nx:-cy,ny:cx}});
+ const sl=(o,d,lo,hi)=>d===0?(o>=lo&&o<=hi?[-1e9,1e9]:null):d>0?[(lo-o)/d,(hi-o)/d]:[(hi-o)/d,(lo-o)/d];
+ for(let n=0;n<30;n++){
+  let bt=Math.min(dx>0?(W-ox)/dx:dx<0?-ox/dx:1e9,dy>0?(H-oy)/dy:dy<0?-oy/dy:1e9),kind=0,ref=null;
+  for(const w of P.walls){const a=sl(ox,dx,w[0],w[0]+w[2]),b=sl(oy,dy,w[1],w[1]+w[3]);
+   if(a&&b){const t0=Math.max(a[0],b[0]),t1=Math.min(a[1],b[1]);if(t1>=t0&&t0>1e-6&&t0<bt){bt=t0;kind=1}}}
+  sg.forEach((s,i)=>{if(i===last)return;const den=dx*s.ey-dy*s.ex;if(Math.abs(den)<1e-9)return;
+   const wx=s.ax-ox,wy=s.ay-oy,t=(wx*s.ey-wy*s.ex)/den,u=(wx*dy-wy*dx)/den;if(t>1e-6&&t<bt&&u>=0&&u<=1){bt=t;kind=2;ref=i}});
+  {const fx=ox-P.R[0],fy=oy-P.R[1],b=fx*dx+fy*dy,q=b*b-(fx*fx+fy*fy-RR*RR);
+   if(q>=0){const t=-b-Math.sqrt(q);if(t>1e-6&&t<bt){bt=t;kind=3}}}
+  P.gems.forEach((g,i)=>{const t=Math.max(0,Math.min(bt,(g[0]-ox)*dx+(g[1]-oy)*dy));if(Math.hypot(ox+dx*t-g[0],oy+dy*t-g[1])<.26)got.add(i)});
+  const ex=ox+dx*bt,ey=oy+dy*bt;pts.push([ex,ey]);len+=bt;
+  if(kind===3){const fr=P.R[2]*Math.PI/180;if(((ex-P.R[0])*Math.cos(fr)+(ey-P.R[1])*Math.sin(fr))/RR>.5)hit=true;break}
+  if(kind!==2)break;
+  const s=sg[ref],dn=dx*s.nx+dy*s.ny;bs.push({x:ex,y:ey,nx:s.nx,ny:s.ny,din:[dx,dy],th:Math.round(Math.acos(Math.min(1,Math.abs(dn)))*180/Math.PI)});
+  dx-=2*dn*s.nx;dy-=2*dn*s.ny;ox=ex;oy=ey;last=ref}
+ return{pts,got,bs,hit,len}}
+//</pure>
+
+const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+let li=0,LV,P,pm,res,reveal,won,hintG,hover,drag,sel=null,obs=true,snd=true,c=60,dpr=1,hitT=0,prog=Array(DATA.length).fill(0);
+try{const s=JSON.parse(localStorage.getItem("light-lab-v2"));if(Array.isArray(s))prog=DATA.map((_,i)=>s[i]|0)}catch(e){}
+const save=()=>{try{localStorage.setItem("light-lab-v2",JSON.stringify(prog))}catch(e){}};
+let AC;const beep=(f,d=.1,t="sine",v=.07)=>{if(!snd)return;try{AC=AC||new(window.AudioContext||webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+d)}catch(e){}};
+const say=m=>$("#say").textContent=m;
+const left=()=>LV.k-pm.length,norm=a=>((Math.round(a)%180)+180)%180;
+function load(i){li=i;LV={...DATA[i],...META[i]};LV.k=LV.s.length+2;P={...LV};pm=[];sel=null;hintG=null;recalc(false);say(LV.t||"把光送進接收器（圓環缺口朝向的那一側），順便收集所有光點。");ui()}
+function recalc(inst){res=trace(P,pm);reveal=inst||reduce?res.len:0;won=false;ui2()}
+function ui(){$("#sub").textContent="第 "+(li+1)+" 關　"+LV.n;$("#prev").disabled=li===0;$("#next").disabled=li>=DATA.length-1||!prog[li];ui2();$("#tot").textContent="★ "+prog.reduce((a,b)=>a+b,0)+"/"+DATA.length*3}
+function ui2(){let h="鏡子 "+pm.length+"/"+LV.k+"　最少 "+LV.s.length+" 面　";for(let i=0;i<LV.k;i++)h+="<i class='"+(i<pm.length?"u":"")+"'></i>";$("#left").innerHTML=h;
+ const s=sel!=null&&pm[sel];$("#ang").textContent=s?"鏡面 "+norm(s.a)+"°":"選取鏡子可轉動";document.querySelectorAll(".rot").forEach(b=>b.disabled=!s)}
+function resize(){dpr=devicePixelRatio||1;const s=$("#stage"),w=Math.max(240,Math.min(s.clientWidth,s.clientHeight*W/H));cv.style.width=w+"px";cv.style.height=w*H/W+"px";cv.width=w*dpr;cv.height=w*H/W*dpr;c=w/W}
+addEventListener("resize",resize);new ResizeObserver(resize).observe($("#stage"));
+const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]};
+const snap=v=>Math.round(v*2)/2;
+function valid(x,y,self){if(x<.3||y<.3||x>W-.3||y>H-.3)return false;
+ if(P.walls.some(w=>x>=w[0]-.1&&x<=w[0]+w[2]+.1&&y>=w[1]-.1&&y<=w[1]+w[3]+.1))return false;
+ if(Math.hypot(x-P.E[0],y-P.E[1])<.6||Math.hypot(x-P.R[0],y-P.R[1])<.7)return false;
+ return ![...P.fixed.map(f=>({x:f[0],y:f[1]})),...pm.filter((_,i)=>i!==self)].some(m=>Math.hypot(m.x-x,m.y-y)<.5)}
+const ends=m=>{const r=m.a*D2R;return[[m.x-Math.cos(r)*HL,m.y-Math.sin(r)*HL],[m.x+Math.cos(r)*HL,m.y+Math.sin(r)*HL]]};
+const distSeg=(p,m)=>{const r=m.a*D2R,cx=Math.cos(r),cy=Math.sin(r),t=Math.max(-HL,Math.min(HL,(p[0]-m.x)*cx+(p[1]-m.y)*cy));return Math.hypot(m.x+cx*t-p[0],m.y+cy*t-p[1])};
+cv.addEventListener("pointerdown",e=>{const p=pos(e);cv.setPointerCapture(e.pointerId);drag={p,sx:e.clientX,sy:e.clientY,mv:false,t:"tap"};
+ if(sel!=null){const en=ends(pm[sel]),m0=pm[sel];const k=Math.hypot(p[0]-m0.x,p[1]-m0.y)<.22?-1:en.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<.45);if(k>=0){drag.t="rot";drag.k=k;return}}
+ let best=-1,bd=.4;pm.forEach((m,i)=>{const d=distSeg(p,m);if(d<bd){bd=d;best=i}});
+ if(best>=0){sel=best;drag.t="move";drag.i=best;drag.o=[pm[best].x,pm[best].y];ui2();return}
+ if(P.fixed.some(f=>distSeg(p,{x:f[0],y:f[1],a:f[2]})<.3))say("灰色的鏡子是固定的，不能移動。")});
+cv.addEventListener("pointermove",e=>{const p=pos(e);hover=p;if(!drag)return;
+ if(drag.t==="rot"){const m=pm[sel];let a=Math.atan2(p[1]-m.y,p[0]-m.x)/D2R+(drag.k?0:180);m.a=norm(Math.round(a/5)*5);recalc(true)}
+ else if(drag.t==="move"&&(drag.mv||Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>10)){drag.mv=true;const x=snap(p[0]-drag.p[0]+drag.o[0]),y=snap(p[1]-drag.p[1]+drag.o[1]);if(valid(x,y,drag.i)){pm[drag.i].x=x;pm[drag.i].y=y;recalc(true)}}});
+cv.addEventListener("pointerleave",()=>{hover=null});
+cv.addEventListener("pointerup",e=>{if(!drag)return;const d=drag;drag=null;
+ if(d.t==="tap"){const x=snap(d.p[0]),y=snap(d.p[1]);
+  if(left()<=0){sel=null;say("鏡子用完了。選取一面鏡子後，可以刪除或移動它。");ui2();return}
+  if(!valid(x,y,-1)){say("這裡不能放鏡子。");return}
+  pm.push({x,y,a:45});sel=pm.length-1;beep(440);recalc(false)}
+ else if(d.mv)beep(520);else if(d.t==="rot")beep(600,.06)});
+function rot(da){if(sel==null||!pm[sel])return;pm[sel].a=norm(pm[sel].a+da);beep(600,.05);recalc(true)}
+function del(){if(sel==null||!pm[sel])return;pm.splice(sel,1);sel=null;beep(300,.12,"triangle");recalc(true)}
+document.querySelectorAll(".rot").forEach(b=>b.onclick=()=>rot(+b.dataset.d));$("#del").onclick=del;
+addEventListener("keydown",e=>{if(document.querySelector("dialog[open]"))return;const s=e.shiftKey?5:1;
+ if(e.key==="ArrowLeft"||e.key==="ArrowUp"){rot(-s);e.preventDefault()}else if(e.key==="ArrowRight"||e.key==="ArrowDown"){rot(s);e.preventDefault()}else if(e.key==="Delete"||e.key==="Backspace")del()});
+$("#reset").onclick=()=>{pm=[];sel=null;hintG=null;recalc(false);say("已清除所有鏡子。")};
+$("#hint").onclick=()=>{const dm=(a,b)=>{const d=Math.abs(a-b)%180;return Math.min(d,180-d)},near=(s,m)=>Math.hypot(m.x-s[0],m.y-s[1])<.9;
+ let s=LV.s.find(q=>!pm.some(m=>near(q,m))),msg;
+ if(s)msg="提示：虛線閃爍處放一面鏡子，鏡面角度約 "+norm(s[2])+"°。";
+ else{s=LV.s.find(q=>!pm.some(m=>near(q,m)&&dm(m.a,q[2])<4));msg=s?"提示：這面鏡子位置接近了，角度約調成 "+norm(s[2])+"°。":"位置和角度都很接近了，試著用 ±1° 微調，或檢查光點。"}
+ if(s)hintG={x:s[0],y:s[1],a:s[2],until:performance.now()+6000};say(msg)};
+$("#obs").onclick=e=>{obs=!obs;e.target.classList.toggle("on",obs)};
+$("#snd").onclick=e=>{snd=!snd;e.target.textContent=snd?"音效開":"音效關"};
+$("#prev").onclick=()=>load(li-1);$("#next").onclick=()=>load(li+1);
+function menu(){const g=$("#grid");g.innerHTML="";DATA.forEach((_,i)=>{const b=document.createElement("button"),ok=i===0||prog[i-1]>0;b.disabled=!ok;
+ b.innerHTML=(i+1)+". "+META[i].n+"<span>"+(ok?"★".repeat(prog[i])+"☆".repeat(3-prog[i]):"尚未解鎖")+"</span>";b.onclick=()=>{$("#dMenu").close();load(i)};g.appendChild(b)});$("#dMenu").showModal()}
+$("#menu").onclick=menu;$("#closeMenu").onclick=()=>$("#dMenu").close();
+function win(){const all=res.got.size===P.gems.length,par=LV.s.length,ok=pm.length<=par,st=1+all+ok;
+ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,i>2?.3:.15,"triangle",.1),i*120));
+ prog[li]=Math.max(prog[li],st);save();ui();$("#ws").textContent="★".repeat(st)+"☆".repeat(3-st);
+ $("#wd").innerHTML="光點 "+res.got.size+"/"+P.gems.length+(all?" ✓":"（收集全部可得 1 星）")+"<br>使用鏡子 "+pm.length+" 面，最少需要 "+par+" 面"+(ok?" ✓":"（用最少的鏡子可得 1 星）");
+ $("#wn").textContent=LV.c;const q=$("#quiz");q.innerHTML="";
+ if(LV.q){const d=document.createElement("div");d.innerHTML="<b>小測驗：</b>"+LV.q[0]+"<div class='opts'></div><div class='ex' style='color:var(--dim);font-size:13px;margin-top:6px'></div>";
+  LV.q[1].forEach((t,i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>{d.querySelectorAll("button").forEach(x=>x.disabled=true);b.classList.add(i===LV.q[2]?"ok":"no");
+   if(i!==LV.q[2])d.querySelectorAll("button")[LV.q[2]].classList.add("ok");d.querySelector(".ex").textContent=(i===LV.q[2]?"答對了！":"再想想。")+LV.q[3]};d.querySelector(".opts").appendChild(b)});q.appendChild(d)}
+ $("#goNext").textContent=li>=DATA.length-1?"回到選單":"下一關";$("#dWin").showModal()}
+$("#stay").onclick=()=>$("#dWin").close();$("#again").onclick=()=>{$("#dWin").close();load(li)};
+$("#goNext").onclick=()=>{$("#dWin").close();if(li>=DATA.length-1)menu();else load(li+1)};
+/* ---------- 繪圖（座標單位：格） ---------- */
+const rr=(x,y,w,h,r)=>ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h);
+function mirrorLine(m,col,wd){const[a,b]=ends(m);ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(a[0]*c,a[1]*c);ctx.lineTo(b[0]*c,b[1]*c);ctx.stroke()}
+function draw(t){ctx.setTransform(dpr,0,0,dpr,0,0);const w=c*W,h=c*H;
+ ctx.fillStyle="#0e1a27";ctx.fillRect(0,0,w,h);ctx.fillStyle="#223549";
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){ctx.beginPath();ctx.arc((x+.5)*c,(y+.5)*c,c*.03,0,7);ctx.fill()}
+ P.walls.forEach(([x,y,ww,hh])=>{ctx.fillStyle="#04080d";ctx.fillRect(x*c+1,y*c+1,ww*c-2,hh*c-2);ctx.strokeStyle="#2a3f55";ctx.lineWidth=1;ctx.strokeRect(x*c+4,y*c+4,ww*c-8,hh*c-8)});
+ P.fixed.forEach(f=>{const m={x:f[0],y:f[1],a:f[2]};mirrorLine(m,"#9db2c6",c*.09);ctx.fillStyle="#52687e";ends(m).forEach(e=>{ctx.beginPath();ctx.arc(e[0]*c,e[1]*c,c*.05,0,7);ctx.fill()})});
+ if(res.len>0){const q=res.pts;ctx.save();ctx.globalCompositeOperation="lighter";ctx.lineJoin="round";ctx.lineCap="round";
+  [[c*.3,"rgba(255,70,40,.16)"],[c*.13,"rgba(255,90,60,.5)"],[c*.05,"#ffd9cf"]].forEach(([lw,col])=>{ctx.beginPath();let rem=reveal;ctx.moveTo(q[0][0]*c,q[0][1]*c);
+   for(let i=1;i<q.length;i++){const a=q[i-1],b=q[i],L=Math.hypot(b[0]-a[0],b[1]-a[1]),f=Math.min(1,rem/L);ctx.lineTo((a[0]+(b[0]-a[0])*f)*c,(a[1]+(b[1]-a[1])*f)*c);rem-=L;if(rem<=0)break}
+   ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke()});ctx.restore()}
+ P.gems.forEach((g,i)=>{const on=res.got.has(i)&&reveal>=res.len*.98;ctx.save();ctx.translate(g[0]*c,g[1]*c);ctx.rotate(Math.PI/4);const s=c*.13;
+  if(on){ctx.shadowColor="#ffc857";ctx.shadowBlur=c*.3;ctx.fillStyle="#ffd77a"}else ctx.fillStyle="#3a3220";ctx.strokeStyle="#ffc857";ctx.lineWidth=2;ctx.fillRect(-s,-s,2*s,2*s);ctx.strokeRect(-s,-s,2*s,2*s);ctx.restore()});
+ pm.forEach((m,i)=>{ctx.save();ctx.shadowColor="#8fd4f2";ctx.shadowBlur=c*.2;mirrorLine(m,"#d6f0fb",c*.09);ctx.restore();
+  if(i===sel){ctx.strokeStyle="#ffc857";ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(m.x*c,m.y*c,c*.52,0,7);ctx.stroke();ctx.setLineDash([]);
+   ends(m).forEach(e=>{ctx.fillStyle="#ffc857";ctx.beginPath();ctx.arc(e[0]*c,e[1]*c,c*.12,0,7);ctx.fill()});ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(m.x*c,m.y*c,c*.06,0,7);ctx.fill()}
+  else{ctx.fillStyle="#7fb8d6";ctx.beginPath();ctx.arc(m.x*c,m.y*c,c*.045,0,7);ctx.fill()}});
+ if(hover&&!drag&&left()>0&&valid(snap(hover[0]),snap(hover[1]),-1)){ctx.strokeStyle="#35516b";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(snap(hover[0])*c,snap(hover[1])*c,c*.12,0,7);ctx.stroke()}
+ if(hintG){if(t>hintG.until)hintG=null;else{ctx.save();ctx.globalAlpha=.4+.4*Math.sin(t/160);ctx.setLineDash([c*.1,c*.08]);mirrorLine({x:hintG.x,y:hintG.y,a:hintG.a},"#ffc857",c*.07);ctx.beginPath();ctx.arc(hintG.x*c,hintG.y*c,c*.52,0,7);ctx.lineWidth=2;ctx.stroke();ctx.restore()}}
+ if(obs){ctx.save();ctx.font="700 "+Math.max(10,c*.17)+"px 'Noto Sans TC',sans-serif";ctx.textAlign="center";
+  res.bs.forEach((b,i)=>{if(reveal<res.len*.98&&i>0&&reveal<res.len*i/res.bs.length)return;const X=b.x*c,Y=b.y*c,L=c*.5;
+   ctx.strokeStyle="#9fe8c3";ctx.setLineDash([c*.07,c*.06]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X-b.nx*L,Y-b.ny*L);ctx.lineTo(X+b.nx*L,Y+b.ny*L);ctx.stroke();ctx.setLineDash([]);
+   if(i<3){const s=(-b.din[0]*b.nx-b.din[1]*b.ny)>0?1:-1,tx="入射角＝反射角＝"+b.th+"°",lx=Math.min(w-c*1.3,Math.max(c*1.3,X+s*b.nx*c*.85)),ly=Y+s*b.ny*c*.7;
+    ctx.lineWidth=4;ctx.strokeStyle="#0e1a27";ctx.strokeText(tx,lx,ly);ctx.fillStyle="#9fe8c3";ctx.fillText(tx,lx,ly)}});ctx.restore()}
+ {const e=P.E;ctx.save();ctx.translate(e[0]*c,e[1]*c);ctx.rotate(e[2]*D2R);ctx.fillStyle="#3a4d62";ctx.strokeStyle="#6d87a1";ctx.lineWidth=1.5;ctx.beginPath();rr(-c*.36,-c*.16,c*.58,c*.32,c*.06);ctx.fill();ctx.stroke();
+  ctx.fillStyle="#1c2b3a";ctx.fillRect(-c*.22,-c*.16,c*.05,c*.32);ctx.fillStyle="#ff6a4d";ctx.shadowColor="#ff3b1f";ctx.shadowBlur=c*.25;ctx.beginPath();ctx.arc(c*.22,0,c*.07,0,7);ctx.fill();ctx.restore()}
+ {const r=P.R,a=r[2]*D2R,on=res.hit&&reveal>=res.len;if(on&&!hitT)hitT=t;if(!on)hitT=0;ctx.save();ctx.translate(r[0]*c,r[1]*c);
+  ctx.strokeStyle=on?"#62e3a4":"#3f8f70";ctx.lineWidth=c*.09;ctx.lineCap="round";if(on){ctx.shadowColor="#62e3a4";ctx.shadowBlur=c*.4}
+  ctx.beginPath();ctx.arc(0,0,RR*c,a+.8,a+Math.PI*2-.8);ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=on?"#62e3a4":"#1f5a45";ctx.beginPath();ctx.arc(0,0,c*.1,0,7);ctx.fill();
+  ctx.rotate(a);ctx.fillStyle="#62e3a4";ctx.globalAlpha=.5+.4*Math.sin(t/220);ctx.beginPath();ctx.moveTo(c*.5,0);ctx.lineTo(c*.42,-c*.06);ctx.lineTo(c*.42,c*.06);ctx.fill();ctx.restore();
+  if(on&&t-hitT<700){const k=(t-hitT)/700;ctx.strokeStyle="rgba(98,227,164,"+(1-k)+")";ctx.lineWidth=3;ctx.beginPath();ctx.arc(r[0]*c,r[1]*c,c*(.3+k*.9),0,7);ctx.stroke()}}}
+let last=0;function frame(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;
+ if(reveal<res.len)reveal=Math.min(res.len,reveal+dt*14);
+ draw(t);if(!won&&!drag&&res.hit&&reveal>=res.len){won=true;setTimeout(()=>{if(won&&!drag&&!$("#dMenu").open)win()},650)}
+ requestAnimationFrame(frame)}
+resize();load(0);requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
+
