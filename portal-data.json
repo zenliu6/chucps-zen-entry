@@ -1,0 +1,19 @@
+{
+  "title": "📚 課堂網頁入口",
+  "cats": [
+    "數學",
+    "國語",
+    "自然",
+    "其他"
+  ],
+  "items": [
+    {
+      "id": "i1794320674076",
+      "title": "雷射實驗室",
+      "url": "https://zenliu6.github.io/chucps-zen-entry/lasergame/",
+      "desc": "自然課雷射小遊戲",
+      "icon": "",
+      "cat": "自然"
+    }
+  ]
+}
