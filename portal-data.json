@@ -7,16 +7,16 @@
   ],
   "items": [
      {
-      "title": "動物",
+      "title": "認識動物",
       "url": "https://zenliu6.github.io/chucps-zen-entry/3rd-animal/",
-      "desc": "動物",
-      "icon": "💡",
+      "desc": "3年級上學期認識動物-動物闖關樂園",
+      "icon": "🐒",
       "cat": "自然3年級"
     },
     {
       "title": "雷射實驗室",
       "url": "https://zenliu6.github.io/chucps-zen-entry/lasergame/",
-      "desc": "自然課雷射小遊戲",
+      "desc": "4年級上學期光-雷射小遊戲",
       "icon": "💡",
       "cat": "自然4年級"
     },
