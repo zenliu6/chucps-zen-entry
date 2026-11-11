@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>課堂網頁入口</title>
 <style>
-:root{--bg:#f4f6fb;--surface:#fff;--text:#1f2a44;--muted:#6b7694;--line:#e3e8f3;--accent:#4f6df5;--accent2:#8b5cf6;--accent-soft:#e9edff;--danger:#e5484d;--shadow:0 6px 20px rgba(40,60,120,.08);
+:root{--bg:#f4f6fb;--surface:#fff;--text:#1f2a44;--muted:#6b7694;--line:#e3e8f3;--accent:#4f6df5;--accent2:#8b5cf6;--accent-soft:#e9edff;--shadow:0 6px 20px rgba(40,60,120,.08);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--surface:#1b2030;--text:#e8ecf8;--muted:#9aa4c2;--line:#2b3250;--accent:#7f95ff;--accent2:#a78bfa;--accent-soft:#252c4d;--shadow:0 6px 20px rgba(0,0,0,.35);color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#12151f;--surface:#1b2030;--text:#e8ecf8;--muted:#9aa4c2;--line:#2b3250;--accent:#7f95ff;--accent2:#a78bfa;--accent-soft:#252c4d;--shadow:0 6px 20px rgba(0,0,0,.35);color-scheme:dark}
@@ -16,21 +16,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 .wrap{max-width:1080px;margin:0 auto}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 h1{margin:0;font-size:clamp(26px,5vw,40px);letter-spacing:.5px}
-body.editing h1{outline:2px dashed rgba(255,255,255,.6);outline-offset:4px;border-radius:6px}
 .sub{opacity:.9;margin-top:4px}
-.tools{display:flex;gap:8px;flex-wrap:wrap}
 button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:9px 14px;background:var(--accent);color:#fff}
-button:disabled{opacity:.6;cursor:wait}
 button.ghost{background:rgba(255,255,255,.18);color:#fff}
 button.soft{background:var(--accent-soft);color:var(--accent)}
-button.danger{background:transparent;color:var(--danger)}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
-.main{max-width:1080px;margin:-40px auto 90px;padding:0 16px}
-.bar{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.bar input[type=search]{flex:1 1 200px}
-input,select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:16px 2px}
-.chip{background:var(--surface);color:var(--text);border:1px solid var(--line);padding:7px 14px;border-radius:99px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.main{max-width:1080px;margin:-40px auto 40px;padding:0 16px}
+.bar{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.chip{background:var(--bg);color:var(--text);border:1px solid var(--line);padding:7px 14px;border-radius:99px}
 .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 .card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);transition:transform .15s}
@@ -46,74 +39,27 @@ dialog{border:0;border-radius:20px;padding:22px;background:var(--surface);color:
 dialog::backdrop{background:rgba(10,15,30,.55)}
 dialog h2{margin:0 0 14px;font-size:20px}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%}
 .row{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
-.catrow{display:flex;gap:6px;margin:6px 0;align-items:center}
-.catrow input{flex:1}
-.catrow button{padding:7px 10px}
 .qrbox{background:#fff;border-radius:16px;padding:16px;display:grid;place-items:center;margin:8px auto;width:fit-content;cursor:zoom-in}
 .qrbox img,.qrbox canvas{display:block}
 .qrt{text-align:center;font-weight:700;font-size:18px;margin-top:6px}
 .hint{text-align:center;color:var(--muted);font-size:13px}
-.hint.l{text-align:left}
-.err{color:var(--danger);font-size:14px;min-height:20px;margin-top:6px}
 .big{width:min(96vw,720px)}
-textarea{min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
-details{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:10px 0;font-size:13px;color:var(--muted)}
-details summary{cursor:pointer;color:var(--accent)}
-details ol{margin:8px 0 0;padding-left:20px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.edit-only,.t-only{display:none}
-body.editing .edit-only{display:inline-block}
-body.teacher .t-only{display:inline-block}
-body.teacher #bLogin{display:none}
-.syncbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--surface);color:var(--text);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.25);border-radius:16px;padding:10px 14px;max-width:94vw}
-.syncbar[hidden]{display:none}
-.syncbar span{font-weight:600}
 </style>
 </head>
 <body>
 <header class="hero"><div class="wrap">
   <div class="top">
-    <div><h1 id="title" contenteditable="false">📚 課堂網頁入口</h1><div class="sub">點選卡片開啟教材，或產生 QR Code 讓學生掃描</div></div>
-    <div class="tools">
-      <button class="ghost" id="bQuick">🔳 QR 產生器</button>
-      <button class="ghost" id="bLogin">🔒 教師登入</button>
-      <button class="ghost t-only" id="bEdit">✅ 完成編輯</button>
-      <button class="ghost edit-only" id="bCats">🗂 管理分類</button>
-      <button class="ghost edit-only" id="bBackup">💾 備份</button>
-      <button class="ghost t-only" id="bSync">⚙️ 同步設定</button>
-      <button class="ghost t-only" id="bLogout">🚪 登出</button>
-    </div>
+    <div><h1 id="title">📚 課堂網頁入口</h1><div class="sub">點選卡片開啟教材，或產生 QR Code 讓學生掃描</div></div>
+    <button class="ghost" id="bQuick">🔳 QR 產生器</button>
   </div>
 </div></header>
 
 <main class="main">
-  <div class="bar">
-    <input type="search" id="q" placeholder="🔍 搜尋網頁名稱或說明…" aria-label="搜尋">
-    <button class="edit-only" id="bAdd">＋ 新增網頁</button>
-  </div>
-  <div class="chips" id="chips"></div>
+  <div class="bar" id="chips"></div>
   <div class="grid" id="grid"><div class="empty" style="grid-column:1/-1">載入中…</div></div>
 </main>
-
-<div class="syncbar" id="syncBar" hidden>
-  <span>● 有尚未發佈的變更</span>
-  <button class="soft" id="bDiscard">放棄變更</button>
-  <button id="bPubGo">☁️ 發佈到網站</button>
-</div>
-
-<dialog id="dItem"><h2 id="dItemT">新增網頁</h2>
-  <label>名稱</label><input id="fTitle">
-  <label>網址（https://…）</label><input id="fUrl" inputmode="url" placeholder="https://">
-  <label>說明（選填）</label><input id="fDesc">
-  <label>圖示（一個 emoji）</label><input id="fIcon" maxlength="4" placeholder="📘">
-  <label>分類</label><select id="fCat"></select>
-  <div class="row"><button class="soft" data-close>取消</button><button id="fSave">儲存</button></div>
-</dialog>
-
-<dialog id="dCats"><h2>管理分類</h2><div id="catList"></div>
-  <div class="row" style="justify-content:space-between"><button class="soft" id="catAdd">＋ 新增分類</button><button data-close>完成</button></div>
-</dialog>
 
 <dialog id="dQR"><h2>📱 QR Code</h2>
   <div class="qrt" id="qrTitle"></div>
@@ -123,262 +69,38 @@ body.teacher #bLogin{display:none}
   <div class="row"><button data-close>關閉</button></div>
 </dialog>
 
-<dialog id="dBack"><h2>💾 備份與還原</h2>
-  <div class="hint l">複製下方文字另存備份。貼上並按「還原」後，需再按「發佈到網站」才會更新線上版本。</div>
-  <textarea id="bk"></textarea>
-  <div class="row"><button class="soft" data-close>關閉</button><button id="bkRestore">還原</button></div>
-</dialog>
-
-<dialog id="dLogin"><h2>🔒 教師登入</h2>
-  <label>密碼</label><input id="lPw" type="password" autocomplete="current-password">
-  <div class="err" id="lErr"></div>
-  <div class="row" style="justify-content:space-between">
-    <button class="danger" id="lReset">忘記密碼？重新設定</button>
-    <span style="display:flex;gap:8px"><button class="soft" data-close>取消</button><button id="lGo">解鎖</button></span>
-  </div>
-</dialog>
-
-<dialog id="dSetup"><h2 id="sTitle">教師設定</h2>
-  <div class="two">
-    <div><label>GitHub 帳號</label><input id="sOwner" placeholder="your-name" autocapitalize="off"></div>
-    <div><label>儲存庫名稱</label><input id="sRepo" placeholder="my-portal" autocapitalize="off"></div>
-    <div><label>分支</label><input id="sBranch" value="main" autocapitalize="off"></div>
-    <div><label>資料檔路徑</label><input id="sPath" value="portal-data.json" autocapitalize="off"></div>
-  </div>
-  <div class="hint l" style="margin-top:6px">資料檔要與本網頁在同一個資料夾。若本網頁放在子資料夾，請寫成「子資料夾/portal-data.json」。</div>
-  <div id="credBox">
-    <details><summary>如何取得 GitHub 權杖（Token）？</summary>
-      <ol>
-        <li>GitHub 右上角頭像 → Settings → Developer settings</li>
-        <li>Personal access tokens → Fine-grained tokens → Generate new token</li>
-        <li>Repository access 選「Only select repositories」，只勾選這個儲存庫</li>
-        <li>Repository permissions → <b>Contents</b> 設為 <b>Read and write</b></li>
-        <li>產生後複製（只會顯示一次），貼到下方</li>
-      </ol>
-    </details>
-    <label>GitHub 權杖</label><input id="sToken" type="password" autocomplete="off" placeholder="github_pat_…">
-    <div class="two">
-      <div><label>設定教師密碼（6 字以上）</label><input id="sPw" type="password" autocomplete="new-password"></div>
-      <div><label>再輸入一次</label><input id="sPw2" type="password" autocomplete="new-password"></div>
-    </div>
-    <div class="hint l" style="margin-top:6px">權杖會用這組密碼加密後，只存在這台裝置的瀏覽器裡，不會上傳。</div>
-  </div>
-  <div class="row" style="justify-content:space-between">
-    <button class="danger" id="sWipe">清除本機權杖與密碼</button>
-    <span style="display:flex;gap:8px"><button class="soft" data-close>取消</button><button id="sGo">儲存</button></span>
-  </div>
-</dialog>
-
-<dialog id="dConfirm"><h2 id="cMsg" style="font-size:17px;line-height:1.5"></h2>
-  <div class="row"><button class="soft" id="cNo">取消</button><button id="cOk">確定</button></div>
-</dialog>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const DATA_FILE="portal-data.json";
-const K_DRAFT="classPortal.draft.v2",K_VAULT="classPortal.vault.v2",K_CFG="classPortal.cfg.v2",K_OLD="classPortal.v1";
-const defaults={title:"📚 課堂網頁入口",cats:["數學","國語","自然","其他"],items:[
- {id:"a1",title:"範例：九九乘法練習",url:"https://example.com/",desc:"把這裡換成你自己的一頁式網頁",icon:"✖️",cat:"數學"},
- {id:"a2",title:"範例：注音小遊戲",url:"https://example.com/",desc:"登入教師模式後即可新增、修改",icon:"🔤",cat:"國語"}]};
 const $=id=>document.getElementById(id);
-const clone=o=>JSON.parse(JSON.stringify(o));
-const valid=d=>d&&Array.isArray(d.items)&&Array.isArray(d.cats)&&d.cats.length>0;
-function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
-function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+let S={title:"📚 課堂網頁入口",cats:[],items:[]},cur="全部",qrSize=260,failed=false;
 
-let S=clone(defaults),remoteData=null,remoteOk=false;
-let teacher=false,dirty=false,token=null,setupMode="full";
-let vault=lsGet(K_VAULT),cfg=lsGet(K_CFG)||{owner:"",repo:"",branch:"main",path:DATA_FILE};
-let cur="全部",editId=null,qrSize=260;
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fixUrl(u){u=String(u||"").trim();return u&&!/^https?:\/\//i.test(u)?"https://"+u:u}
 
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function fixUrl(u){u=u.trim();return u&&!/^https?:\/\//i.test(u)?"https://"+u:u}
-
-/* ---------- 顯示 ---------- */
 function render(){
-  $("title").textContent=S.title;
+  $("title").textContent=S.title||"📚 課堂網頁入口";
   const chips=["全部",...S.cats];
   if(!chips.includes(cur))cur="全部";
+  $("chips").style.display=S.cats.length?"":"none";
   $("chips").innerHTML=chips.map(c=>`<button class="chip ${c===cur?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
-  const q=$("q").value.trim().toLowerCase();
-  const list=S.items.filter(i=>(cur==="全部"||i.cat===cur)&&(!q||(i.title+i.desc).toLowerCase().includes(q)));
-  const emptyMsg=teacher?"還沒有網頁，按「＋ 新增網頁」吧！":"目前還沒有網頁";
-  $("grid").innerHTML=list.length?list.map(i=>`<div class="card"><div class="ico">${esc(i.icon||"🌐")}</div><h3>${esc(i.title)}</h3><p>${esc(i.desc||"")}</p><span class="tag">${esc(i.cat)}</span>
-  <div class="acts"><button data-o="${i.id}">▶ 開啟</button><button class="soft" data-q="${i.id}">🔳 QR</button><button class="soft edit-only" data-e="${i.id}">編輯</button><button class="danger edit-only" data-d="${i.id}">刪除</button></div></div>`).join(""):`<div class="empty" style="grid-column:1/-1">${emptyMsg}</div>`;
+  const list=S.items.map((it,n)=>({it,n})).filter(x=>cur==="全部"||x.it.cat===cur);
+  $("grid").innerHTML=list.length?list.map(({it,n})=>`<div class="card"><div class="ico">${esc(it.icon||"🌐")}</div><h3>${esc(it.title)}</h3><p>${esc(it.desc)}</p>${it.cat?`<span class="tag">${esc(it.cat)}</span>`:""}
+  <div class="acts"><button data-o="${n}">▶ 開啟</button><button class="soft" data-q="${n}">🔳 QR</button></div></div>`).join(""):
+  `<div class="empty" style="grid-column:1/-1">${failed?"資料載入失敗，請重新整理頁面":"目前還沒有網頁"}</div>`;
 }
-function updateBar(){$("syncBar").hidden=!(teacher&&dirty)}
 
-/* ---------- 對話框 ---------- */
-function ask(msg,info){return new Promise(r=>{const d=$("dConfirm");$("cMsg").textContent=msg;$("cOk").textContent=info?"好":"確定";$("cNo").style.display=info?"none":"";d.returnValue="";d.onclose=()=>r(d.returnValue==="ok");d.showModal()})}
-function notify(m){return ask(m,true)}
-$("cOk").onclick=()=>{$("dConfirm").returnValue="ok";$("dConfirm").close()};
-$("cNo").onclick=()=>$("dConfirm").close();
-
-/* ---------- 資料讀取與草稿 ---------- */
-async function loadRemote(){
+async function load(){
   try{
     const r=await fetch(DATA_FILE+"?t="+Date.now(),{cache:"no-store"});
     if(!r.ok)throw 0;
     const d=await r.json();
-    if(!valid(d))throw 0;
-    S=d;remoteData=clone(d);remoteOk=true;
-  }catch(e){remoteData=clone(defaults)}
+    if(!d||!Array.isArray(d.items))throw 0;
+    S={title:d.title,cats:Array.isArray(d.cats)?d.cats:[],items:d.items};
+  }catch(e){failed=true}
   render();
 }
-function save(){ // 教師修改後呼叫：存草稿並顯示發佈列
-  if(!teacher)return;
-  dirty=true;lsSet(K_DRAFT,S);updateBar();
-}
-function discard(){
-  S=clone(remoteData||defaults);dirty=false;lsDel(K_DRAFT);render();updateBar();
-}
 
-/* ---------- 加密（密碼保護權杖） ---------- */
-const enc=new TextEncoder(),dec=new TextDecoder();
-const toB64=buf=>{let r="";new Uint8Array(buf).forEach(c=>r+=String.fromCharCode(c));return btoa(r)};
-const fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function deriveKey(pw,salt){
-  const m=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
-  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:250000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
-}
-async function lockToken(tk,pw){
-  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
-  const k=await deriveKey(pw,salt);
-  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},k,enc.encode(tk));
-  return{s:toB64(salt),i:toB64(iv),c:toB64(ct)};
-}
-async function unlockToken(v,pw){
-  const k=await deriveKey(pw,fromB64(v.s));
-  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(v.i)},k,fromB64(v.c));
-  return dec.decode(pt);
-}
-function cryptoOK(){
-  if(window.crypto&&crypto.subtle)return true;
-  notify("此環境無法使用加密功能，請改用 https:// 網址（例如 GitHub Pages）開啟本頁。");return false;
-}
-
-/* ---------- 教師模式 ---------- */
-function enterTeacher(){
-  teacher=true;document.body.classList.add("teacher","editing");
-  const d=lsGet(K_DRAFT);
-  if(valid(d)){S=d;dirty=true}
-  else if(!remoteOk){ // 尚未發佈過：沿用舊版本機資料
-    const old=lsGet(K_OLD);
-    if(valid(old)){S=old;dirty=true;lsSet(K_DRAFT,S)}
-  }
-  $("title").contentEditable=true;$("bEdit").textContent="✅ 完成編輯";
-  render();updateBar();
-}
-function leave(){
-  teacher=false;token=null;
-  document.body.classList.remove("teacher","editing");
-  $("title").contentEditable=false;$("bEdit").textContent="✏️ 編輯模式";
-  S=clone(remoteData||defaults);render();updateBar();
-}
-async function logout(){
-  if(dirty&&!await ask("有尚未發佈的變更。登出後草稿仍會保留在這台裝置，下次登入可繼續。要登出嗎？"))return;
-  leave();
-}
-function guessRepo(){
-  const h=location.hostname;
-  if(h.endsWith(".github.io")){
-    const p=location.pathname.split("/")[1];
-    return{owner:h.split(".")[0],repo:(p&&!p.includes("."))?p:h};
-  }
-  return{owner:"",repo:""};
-}
-function openSetup(mode){
-  setupMode=mode;
-  const g=guessRepo();
-  $("sOwner").value=cfg.owner||g.owner;$("sRepo").value=cfg.repo||g.repo;
-  $("sBranch").value=cfg.branch||"main";$("sPath").value=cfg.path||DATA_FILE;
-  $("sToken").value="";$("sPw").value="";$("sPw2").value="";
-  $("credBox").style.display=mode==="full"?"":"none";
-  $("sWipe").style.display=mode==="full"?"none":"";
-  $("sTitle").textContent=mode==="full"?"🔐 首次設定教師登入":"⚙️ 同步設定";
-  $("dSetup").showModal();
-}
-$("bLogin").onclick=()=>{
-  if(vault){$("lPw").value="";$("lErr").textContent="";$("dLogin").showModal();setTimeout(()=>$("lPw").focus(),50)}
-  else openSetup("full");
-};
-$("lPw").addEventListener("keydown",e=>{if(e.key==="Enter")$("lGo").click()});
-$("lGo").onclick=async()=>{
-  if(!cryptoOK())return;
-  const b=$("lGo");b.disabled=true;
-  try{token=await unlockToken(vault,$("lPw").value)}
-  catch(e){$("lErr").textContent="密碼錯誤";b.disabled=false;return}
-  b.disabled=false;$("lPw").value="";$("dLogin").close();enterTeacher();
-};
-$("lReset").onclick=async()=>{
-  if(!await ask("清除這台裝置上的權杖與密碼，並重新設定？"))return;
-  lsDel(K_VAULT);vault=null;$("dLogin").close();openSetup("full");
-};
-$("sWipe").onclick=async()=>{
-  if(!await ask("清除這台裝置上的權杖與密碼？清除後會登出，需重新設定。"))return;
-  lsDel(K_VAULT);vault=null;$("dSetup").close();leave();
-};
-$("bSync").onclick=()=>openSetup("repo");
-$("bLogout").onclick=logout;
-$("sGo").onclick=async()=>{
-  const c={owner:$("sOwner").value.trim(),repo:$("sRepo").value.trim(),branch:$("sBranch").value.trim()||"main",
-           path:$("sPath").value.trim().replace(/^\/+/,"")||DATA_FILE};
-  if(!c.owner||!c.repo)return notify("請填寫 GitHub 帳號與儲存庫名稱");
-  if(setupMode==="repo"){cfg=c;lsSet(K_CFG,cfg);$("dSetup").close();return}
-  if(!cryptoOK())return;
-  const tk=$("sToken").value.trim(),pw=$("sPw").value,pw2=$("sPw2").value;
-  if(!tk)return notify("請貼上 GitHub 權杖");
-  if(pw.length<6)return notify("密碼至少要 6 個字");
-  if(pw!==pw2)return notify("兩次輸入的密碼不一致");
-  const b=$("sGo");b.disabled=true;b.textContent="驗證中…";
-  try{
-    const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`,
-      {headers:{Authorization:"Bearer "+tk,Accept:"application/vnd.github+json"},cache:"no-store"});
-    if(!r.ok){notify(r.status===401?"權杖無效或已過期，請重新產生。":"找不到這個儲存庫，或權杖沒有存取它的權限。請檢查帳號、儲存庫名稱與權杖設定。");return}
-    const v=await lockToken(tk,pw);
-    if(!lsSet(K_VAULT,v)||!lsSet(K_CFG,c)){notify("無法在此瀏覽器儲存設定（可能是無痕模式）。");return}
-    vault=v;cfg=c;token=tk;
-    $("dSetup").close();enterTeacher();
-  }catch(e){notify("無法連線到 GitHub，請檢查網路後再試。")}
-  finally{b.disabled=false;b.textContent="儲存"}
-};
-
-/* ---------- 發佈到 GitHub ---------- */
-const b64=s=>toB64(enc.encode(s));
-const errMsg=s=>s===401?"權杖無效或已過期，請到「同步設定」清除後重新設定。":
-  s===403?"權杖沒有寫入權限，請確認 Contents 設為 Read and write。":
-  s===404?"找不到儲存庫或分支，請檢查「同步設定」。":"GitHub 回應錯誤（"+s+"）。";
-function gh(method,url,body){
-  return fetch(url,{method,cache:"no-store",headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});
-}
-async function publish(){
-  if(!teacher||!token)return;
-  if(!cfg.owner||!cfg.repo)return notify("請先到「同步設定」填寫 GitHub 帳號與儲存庫。");
-  const btn=$("bPubGo");btn.disabled=true;btn.textContent="發佈中…";
-  try{
-    const api=`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path.split("/").map(encodeURIComponent).join("/")}`;
-    for(let n=0;n<2;n++){
-      let sha;
-      const g=await gh("GET",api+"?ref="+encodeURIComponent(cfg.branch)+"&t="+Date.now());
-      if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error(errMsg(g.status));
-      const body={message:"更新課堂入口資料",content:b64(JSON.stringify(S,null,2)),branch:cfg.branch};
-      if(sha)body.sha=sha;
-      const p=await gh("PUT",api,body);
-      if(p.ok){
-        dirty=false;lsDel(K_DRAFT);remoteData=clone(S);remoteOk=true;updateBar();
-        notify("已發佈！GitHub Pages 通常約 1 分鐘內更新，學生重新整理即可看到。");return;
-      }
-      if((p.status===409||p.status===422)&&n===0)continue; // 檔案剛被更動，重試一次
-      throw new Error(errMsg(p.status));
-    }
-  }catch(e){notify("發佈失敗："+(e instanceof TypeError?"網路連線有問題。":e.message))}
-  finally{btn.disabled=false;btn.textContent="☁️ 發佈到網站"}
-}
-$("bPubGo").onclick=publish;
-$("bDiscard").onclick=async()=>{if(await ask("放棄尚未發佈的變更，回到目前線上版本？"))discard()};
-
-/* ---------- QR Code ---------- */
 function drawQR(){
   const box=$("qrBox"),u=fixUrl($("qrUrl").value);box.innerHTML="";
   if(!u){box.innerHTML='<div style="color:#667;padding:60px 20px">請輸入網址</div>';return}
@@ -386,67 +108,17 @@ function drawQR(){
 }
 function openQR(title,url){qrSize=260;$("dQR").classList.remove("big");$("qrTitle").textContent=title||"";$("qrUrl").value=url||"";$("dQR").showModal();drawQR()}
 
-/* ---------- 編輯網頁 / 分類 ---------- */
-function openItem(id){
-  editId=id;const i=S.items.find(x=>x.id===id)||{title:"",url:"",desc:"",icon:"",cat:cur==="全部"?S.cats[0]:cur};
-  $("dItemT").textContent=id?"編輯網頁":"新增網頁";
-  $("fTitle").value=i.title;$("fUrl").value=i.url;$("fDesc").value=i.desc;$("fIcon").value=i.icon;
-  $("fCat").innerHTML=S.cats.map(c=>`<option ${c===i.cat?"selected":""}>${esc(c)}</option>`).join("");
-  $("dItem").showModal();
-}
-function renderCats(){
-  $("catList").innerHTML=S.cats.map((c,n)=>`<div class="catrow"><input value="${esc(c)}" data-n="${n}"><button class="soft" data-up="${n}">↑</button><button class="soft" data-dn="${n}">↓</button><button class="danger" data-del="${n}">✕</button></div>`).join("");
-}
-document.addEventListener("click",async e=>{
+document.addEventListener("click",e=>{
   const t=e.target.closest("button");if(!t)return;
   if(t.dataset.close!==undefined)t.closest("dialog").close();
-  if(t.dataset.c){cur=t.dataset.c;render()}
-  if(t.dataset.o){const i=S.items.find(x=>x.id===t.dataset.o);window.open(fixUrl(i.url),"_blank","noopener")}
-  if(t.dataset.q){const i=S.items.find(x=>x.id===t.dataset.q);openQR(i.title,fixUrl(i.url))}
-  if(t.dataset.e&&teacher)openItem(t.dataset.e);
-  if(t.dataset.d&&teacher){const i=S.items.find(x=>x.id===t.dataset.d);if(await ask("確定刪除「"+i.title+"」？")){S.items=S.items.filter(x=>x!==i);save();render()}}
-  const n=t.dataset.up??t.dataset.dn??t.dataset.del;
-  if(n!==undefined&&teacher&&t.closest("#catList")){const k=+n;
-    if(t.dataset.up!==undefined&&k>0)[S.cats[k-1],S.cats[k]]=[S.cats[k],S.cats[k-1]];
-    if(t.dataset.dn!==undefined&&k<S.cats.length-1)[S.cats[k+1],S.cats[k]]=[S.cats[k],S.cats[k+1]];
-    if(t.dataset.del!==undefined){const c=S.cats[k];if(S.cats.length<2)return notify("至少要保留一個分類");
-      if(await ask("刪除分類「"+c+"」？其中的網頁會移到第一個分類。")){S.cats.splice(k,1);S.items.forEach(i=>{if(i.cat===c)i.cat=S.cats[0]})}else return}
-    save();renderCats();render()}
+  if(t.dataset.c!==undefined){cur=t.dataset.c;render()}
+  if(t.dataset.o!==undefined){const i=S.items[+t.dataset.o];window.open(fixUrl(i.url),"_blank","noopener")}
+  if(t.dataset.q!==undefined){const i=S.items[+t.dataset.q];openQR(i.title,fixUrl(i.url))}
 });
-$("catList").addEventListener("change",e=>{
-  if(!teacher)return;
-  const k=+e.target.dataset.n,old=S.cats[k],v=e.target.value.trim();
-  if(!v||S.cats.includes(v)){e.target.value=old;return}
-  S.cats[k]=v;S.items.forEach(i=>{if(i.cat===old)i.cat=v});if(cur===old)cur=v;save();render()});
-$("catAdd").onclick=()=>{let n=1;while(S.cats.includes("新分類"+n))n++;S.cats.push("新分類"+n);save();renderCats();render()};
-$("bCats").onclick=()=>{renderCats();$("dCats").showModal()};
-$("bAdd").onclick=()=>openItem(null);
-$("fSave").onclick=()=>{
-  const t=$("fTitle").value.trim(),u=fixUrl($("fUrl").value);
-  if(!t||!u)return notify("請填寫名稱與網址");
-  const o={title:t,url:u,desc:$("fDesc").value.trim(),icon:$("fIcon").value.trim(),cat:$("fCat").value};
-  if(editId)Object.assign(S.items.find(x=>x.id===editId),o);else S.items.push({id:"i"+Date.now(),...o});
-  save();render();$("dItem").close()};
-
-/* ---------- 標題、編輯模式切換 ---------- */
-function commitTitle(){const v=$("title").textContent.trim();if(v&&v!==S.title){S.title=v;save()}}
-$("bEdit").onclick=()=>{
-  const on=document.body.classList.toggle("editing");
-  $("bEdit").textContent=on?"✅ 完成編輯":"✏️ 編輯模式";$("title").contentEditable=on;
-  if(!on)commitTitle();
-};
-$("title").addEventListener("blur",()=>{if(teacher&&document.body.classList.contains("editing"))commitTitle()});
-$("title").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("title").blur()}});
-
-/* ---------- 其他 ---------- */
 $("bQuick").onclick=()=>openQR("快速產生 QR Code","");
 $("qrUrl").addEventListener("input",drawQR);
 $("qrBox").onclick=()=>{const big=$("dQR").classList.toggle("big");qrSize=big?Math.min(560,innerWidth-90):260;drawQR()};
-$("q").addEventListener("input",render);
-$("bBackup").onclick=()=>{$("bk").value=JSON.stringify(S);$("dBack").showModal()};
-$("bkRestore").onclick=()=>{try{const d=JSON.parse($("bk").value);if(!valid(d))throw 0;S=d;save();render();$("dBack").close()}catch(e){notify("資料格式不正確")}};
-
-loadRemote();
+load();
 </script>
 </body>
 </html>
