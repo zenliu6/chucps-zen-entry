@@ -1,20 +1,26 @@
 {
   "title": "📚 課堂網頁入口",
   "cats": [
-    "自然",
+    "自然3年級",
+    "自然4年級",
     "工具"
   ],
   "items": [
+     {
+      "title": "動物",
+      "url": "https://zenliu6.github.io/chucps-zen-entry/3rd-animal/",
+      "desc": "動物",
+      "icon": "💡",
+      "cat": "自然3年級"
+    },
     {
-      "id": "i1794320674076",
       "title": "雷射實驗室",
       "url": "https://zenliu6.github.io/chucps-zen-entry/lasergame/",
       "desc": "自然課雷射小遊戲",
       "icon": "💡",
-      "cat": "自然"
+      "cat": "自然4年級"
     },
     {
-      "id": "i1794322540712",
       "title": "抽獎轉盤",
       "url": "https://zenliu6.github.io/chucps-zen-entry/luckywheel/",
       "desc": "",
