@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>能源探險隊:光、能量與節能減碳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF8EC; --paper:#FFFFFF; --ink:#2A2833; --ink2:#5E5A6B; --line:#EADFCB;
+  --sun:#F5A524; --sun-d:#C77700; --sky:#3E86D6; --leaf:#2E9E66; --leaf-l:#E3F5EA;
+  --gas:#4A78D0; --coal:#56535F; --solar:#F2B300; --wind:#22AFC0; --hydro:#2F6FB5;
+  --nuke:#9156B8; --geo:#D2643A; --otherre:#7CB342; --other:#C9B79C; --pump:#6FA3D8;
+  --radius:20px; --shadow:0 6px 0 rgba(42,40,51,.08), 0 12px 28px rgba(42,40,51,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Huninn","Noto Sans TC",system-ui,sans-serif;font-size:19px;line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Huninn","Noto Sans TC",sans-serif;line-height:1.3;margin:0 0 .4em}
+h2{font-size:clamp(28px,4vw,40px)}
+h3{font-size:24px}
+p{margin:.4em 0 .9em}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--sky)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:50;background:rgba(255,248,236,.94);backdrop-filter:blur(6px);border-bottom:2px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;text-decoration:none;color:var(--ink);margin-right:auto}
+.brand .logo{width:38px;height:38px}
+.nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:16px;display:flex;align-items:center;gap:6px;transition:transform .15s}
+.nav button:hover{transform:translateY(-2px)}
+.nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.view{display:none;padding:28px 0 60px;animation:fade .35s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;border:2px solid var(--line)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.pill{display:inline-block;border-radius:999px;padding:2px 12px;font-size:15px;background:#F3EDE2;color:var(--ink2)}
+.kicker{font-size:16px;color:var(--sun-d);letter-spacing:.08em;font-weight:700}
+.lead{font-size:21px;color:var(--ink2);max-width:780px}
+.section-head{margin-bottom:22px}
+.big-btn{border:none;border-radius:16px;padding:12px 22px;font-size:19px;background:var(--sun);color:#3a2500;box-shadow:0 4px 0 var(--sun-d);transition:transform .1s}
+.big-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sun-d)}
+.big-btn.green{background:var(--leaf);color:#fff;box-shadow:0 4px 0 #1e6e46}
+.big-btn.blue{background:var(--sky);color:#fff;box-shadow:0 4px 0 #285f9c}
+.ghost{border:2px solid var(--line);background:#fff;border-radius:14px;padding:8px 16px}
+.think{background:#FFF1D2;border-left:6px solid var(--sun);border-radius:14px;padding:14px 18px;margin:16px 0}
+.think b{color:var(--sun-d)}
+.note{font-size:15px;color:var(--ink2)}
+.spacer{height:30px}
+
+/* HOME */
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center}
+@media (max-width:820px){.hero{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(36px,6vw,62px)}
+.hero h1 span{color:var(--sun-d)}
+.quest{display:flex;gap:16px;align-items:flex-start;text-align:left;border:2px solid var(--line);background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:transform .15s}
+.quest:hover{transform:translateY(-4px)}
+.quest .num{flex:none;width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-size:30px}
+.quest h3{margin:0 0 4px;font-size:22px}
+.quest p{margin:0;font-size:16px;color:var(--ink2)}
+.stamps{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.stamp{width:62px;height:62px;border-radius:50%;border:3px dashed #D8CBB4;display:grid;place-items:center;font-size:26px;color:#D8CBB4;transition:all .3s}
+.stamp.got{border:3px solid var(--leaf);background:var(--leaf-l);color:inherit;transform:rotate(-8deg)}
+
+/* sun scene */
+.scene{width:100%;height:auto;display:block}
+.hot{cursor:pointer}
+.hot:hover .ring, .hot:focus .ring{stroke-width:5}
+.hot .ring{transition:stroke-width .2s}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pulse 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.info{min-height:220px}
+.info .emoji{font-size:46px;line-height:1}
+
+/* chains */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{border:2px solid var(--line);background:#fff;border-radius:14px;padding:8px 14px;font-size:17px}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chain{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}
+.step{flex:1 1 150px;background:#FBF7F0;border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center;opacity:.35;transform:scale(.96);transition:all .45s}
+.step.lit{opacity:1;transform:none;background:#fff;border-color:var(--sun)}
+.step .e{font-size:40px;line-height:1.2}
+.step b{display:block;font-size:18px}
+.step small{display:block;font-size:15px;color:var(--ink2);line-height:1.5}
+.arrow{align-self:center;font-size:26px;color:var(--sun-d);opacity:.35;transition:opacity .45s}
+.arrow.lit{opacity:1}
+@media (max-width:640px){.arrow{transform:rotate(90deg);width:100%;text-align:center}}
+
+/* flip cards */
+.flip{perspective:900px;height:190px;border:none;background:none;padding:0}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .f,.flip .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;border:2px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center}
+.flip .f{background:#fff}
+.flip .f .e{font-size:54px;line-height:1.1}
+.flip .f span{font-size:19px}
+.flip .f small{color:var(--ink2);font-size:14px}
+.flip .b{background:#FFF3D6;transform:rotateY(180deg);font-size:17px;line-height:1.55}
+.etag{display:inline-block;border-radius:8px;padding:0 8px;margin:2px;font-size:16px;color:#fff}
+.t-light{background:#E2A400}.t-heat{background:#E4572E}.t-elec{background:#3E86D6}.t-move{background:#2E9E66}.t-sound{background:#9156B8}.t-chem{background:#8A6A44}
+
+/* solar slider demo */
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+@media (max-width:720px){.demo{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--sun)}
+
+/* generator */
+.gen-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+@media (max-width:720px){.gen-wrap{grid-template-columns:1fr}}
+.meter{height:20px;border-radius:999px;background:#EFE7D9;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sun),#FFD66B);transition:width .1s}
+
+/* methods */
+.mtabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-bottom:16px}
+.mtabs button{border:3px solid transparent;background:#fff;border-radius:16px;padding:10px 6px;box-shadow:var(--shadow);font-size:17px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mtabs button .e{font-size:32px;line-height:1.2}
+.mtabs button.on{border-color:var(--ink)}
+.proscons{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.proscons{grid-template-columns:1fr}}
+.pc{border-radius:14px;padding:12px 16px}
+.pc.good{background:var(--leaf-l)}
+.pc.warn{background:#FDECE4}
+.pc ul{margin:4px 0 0;padding-left:22px}
+.pc li{margin:3px 0}
+.conv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 4px}
+.conv .etag{font-size:17px;padding:2px 10px}
+
+/* sort game */
+.sort-pool{display:flex;flex-wrap:wrap;gap:10px;min-height:60px;margin:10px 0 16px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:14px;padding:8px 14px;font-size:18px}
+.chip.sel{border-color:var(--sun);background:#FFF1D2;transform:scale(1.05)}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bin{border:3px dashed var(--line);border-radius:18px;padding:12px;min-height:150px;background:#FFFCF6;text-align:left}
+.bin h4{margin:0 0 8px;font-size:19px}
+.bin.green{border-color:#9ED6B6}
+.bin.gray{border-color:#BDB8C6}
+.bin .chip{cursor:default;margin:3px;display:inline-block}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* map */
+.map-layout{display:grid;grid-template-columns:minmax(280px,1fr) 1fr;gap:20px;align-items:start}
+@media (max-width:860px){.map-layout{grid-template-columns:1fr}}
+#twmap{width:100%;height:auto;max-height:78vh;display:block;margin:0 auto}
+.mk{cursor:pointer}
+.mk circle.bg{transition:r .2s}
+.mk:hover circle.bg,.mk.on circle.bg{r:17}
+.mk text{pointer-events:none}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.filters button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-size:15px;display:flex;align-items:center;gap:6px}
+.filters button .dot{width:12px;height:12px;border-radius:50%}
+.filters button.off{opacity:.4}
+.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:360px}
+.waffle i{aspect-ratio:1;border-radius:5px;background:#eee;transition:transform .2s,opacity .2s}
+.waffle i.dim{opacity:.18}
+.legend{display:flex;flex-direction:column;gap:6px}
+.legend button{display:flex;align-items:center;gap:10px;border:2px solid transparent;background:none;border-radius:12px;padding:4px 8px;text-align:left;font-size:17px}
+.legend button:hover,.legend button.on{border-color:var(--line);background:#fff}
+.legend .sw{width:20px;height:20px;border-radius:6px;flex:none}
+.legend .pct{margin-left:auto;font-weight:700}
+
+/* save */
+.house{position:relative}
+.appl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ap{border:3px solid #F2C9B8;background:#FFF6F2;border-radius:18px;padding:14px;text-align:left;position:relative;transition:all .25s}
+.ap .e{font-size:40px;line-height:1.1}
+.ap b{display:block;font-size:18px;margin-top:4px}
+.ap .st{font-size:15px;color:#B4472A}
+.ap.fixed{border-color:#9ED6B6;background:var(--leaf-l)}
+.ap.fixed .st{color:#1E6E46}
+.ap .badge{position:absolute;top:10px;right:12px;font-size:22px}
+.tipbox{min-height:110px}
+.earthbar{height:26px;border-radius:999px;background:#F0E6D6;overflow:hidden;position:relative}
+.earthbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#7CC59A,var(--leaf));width:0;transition:width .5s}
+.pledge label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:12px;cursor:pointer;font-size:18px}
+.pledge label:hover{background:#FBF7F0}
+.pledge input{width:22px;height:22px;margin-top:5px;accent-color:var(--leaf);flex:none}
+.tree{width:100%;max-width:300px;display:block;margin:0 auto}
+.leafdot{transition:opacity .4s, transform .4s;transform-box:fill-box;transform-origin:center}
+
+/* quiz */
+.qopt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 16px;margin:8px 0;font-size:19px;transition:all .2s}
+.qopt:hover{border-color:var(--sun)}
+.qopt.right{border-color:var(--leaf);background:var(--leaf-l)}
+.qopt.wrong{border-color:#E4572E;background:#FDECE4}
+.qbar{height:12px;background:#EFE7D9;border-radius:999px;overflow:hidden;margin-bottom:14px}
+.qbar i{display:block;height:100%;background:var(--leaf);transition:width .3s}
+.fb{border-radius:14px;padding:12px 16px;margin-top:10px;display:none}
+.fb.on{display:block}
+
+/* sources */
+.src li{margin:8px 0}
+footer{border-top:2px solid var(--line);padding:24px 0 40px;color:var(--ink2);font-size:15px}
+
+/* greenhouse */
+.gh{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+@media (max-width:720px){.gh{grid-template-columns:1fr}}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="回首頁">
+      <svg class="logo" viewBox="0 0 40 40"><circle cx="20" cy="20" r="11" fill="#F5A524"/><g stroke="#F5A524" stroke-width="3" stroke-linecap="round"><path d="M20 2v5M20 33v5M2 20h5M33 20h5M7 7l3.5 3.5M29.5 29.5 33 33M7 33l3.5-3.5M29.5 10.5 33 7"/></g><path d="M21.5 13l-5 8h4l-1.5 6 5-8h-4z" fill="#fff"/></svg>
+      能源探險隊
+    </a>
+    <nav class="nav" aria-label="主選單">
+      <button data-go="home">🏠 首頁</button>
+      <button data-go="earth">☀️ 能量從哪來</button>
+      <button data-go="power">⚙️ 電怎麼來</button>
+      <button data-go="map">🗺️ 台灣電力地圖</button>
+      <button data-go="save">🌱 節能減碳</button>
+      <button data-go="quiz">🏆 闖關測驗</button>
+      <button data-go="sources">📚 資料來源</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= HOME ================= -->
+<section class="view" id="v-home">
+  <div class="hero">
+    <div>
+      <div class="kicker">國小四年級・光和能源・節能減碳</div>
+      <h1>歡迎加入<br><span>能源探險隊</span>!</h1>
+      <p class="lead">電燈會亮、電扇會轉、我們能跑能跳,全都要靠「能量」。跟著五個任務出發,看看能量從哪裡來、電是怎麼做出來的,還有我們可以怎麼幫地球省能源!</p>
+      <button class="big-btn" data-go="earth">開始探險 →</button>
+      <div class="spacer"></div>
+      <div><b>我的探險印章</b> <span class="note">(每完成一個任務就會蓋一個章)</span></div>
+      <div class="stamps" id="stamps"></div>
+    </div>
+    <svg class="scene" viewBox="0 0 400 340" aria-hidden="true">
+      <circle cx="300" cy="80" r="52" fill="#FFD66B"/>
+      <circle cx="300" cy="80" r="40" fill="#F5A524" class="pulse"/>
+      <g stroke="#F5A524" stroke-width="5" stroke-linecap="round" class="spin" style="animation-duration:20s">
+        <path d="M300 8v14M300 138v14M228 80h14M358 80h14M249 29l10 10M341 121l10 10M249 131l10-10M341 39l10-10"/>
+      </g>
+      <path d="M0 260 Q100 220 200 250 T400 240 V340 H0Z" fill="#BFE3C8"/>
+      <path d="M0 290 Q120 260 230 285 T400 280 V340 H0Z" fill="#8ACB9F"/>
+      <!-- wind turbine -->
+      <rect x="86" y="140" width="6" height="120" fill="#fff" stroke="#C8D3DA"/>
+      <g class="spin" style="transform-origin:89px 140px;transform-box:view-box;animation-duration:4s">
+        <path d="M89 140 L84 88 L94 88Z" fill="#fff" stroke="#C8D3DA"/>
+        <path d="M89 140 L137 160 L132 168Z" fill="#fff" stroke="#C8D3DA"/>
+        <path d="M89 140 L45 170 L41 162Z" fill="#fff" stroke="#C8D3DA"/>
+      </g>
+      <circle cx="89" cy="140" r="6" fill="#5E5A6B"/>
+      <!-- solar panels -->
+      <g transform="translate(200 238)">
+        <path d="M0 0 L60 -16 L76 6 L16 22Z" fill="#2F5FA8" stroke="#fff" stroke-width="2"/>
+        <path d="M30 -8 L46 14 M8 11 L68 -5" stroke="#fff" stroke-width="1.5"/>
+      </g>
+      <!-- house -->
+      <g transform="translate(290 210)">
+        <rect x="0" y="30" width="70" height="56" fill="#fff" stroke="#EADFCB" stroke-width="2"/>
+        <path d="M-8 34 L35 0 L78 34Z" fill="#E4572E"/>
+        <rect x="12" y="46" width="18" height="18" fill="#FFE08A"/>
+        <rect x="42" y="56" width="16" height="30" fill="#8A6A44"/>
+      </g>
+      <path d="M150 120 C 140 90, 180 70, 190 100" stroke="#3E86D6" stroke-width="3" fill="none" stroke-dasharray="4 6"/>
+    </svg>
+  </div>
+
+  <div class="spacer"></div>
+  <h3>探險任務</h3>
+  <div class="grid g2" style="margin-top:12px">
+    <button class="quest" data-go="earth"><div class="num" style="background:#FFF1D2">☀️</div><div><h3>任務 1:能量從哪裡來?</h3><p>認識地球最大的能量來源──太陽,還有能量怎麼「變身」。</p></div></button>
+    <button class="quest" data-go="power"><div class="num" style="background:#E5EEFA">⚙️</div><div><h3>任務 2:電是怎麼做出來的?</h3><p>轉動發電機、看懂火力、水力、風力、太陽光電、核能的發電原理。</p></div></button>
+    <button class="quest" data-go="map"><div class="num" style="background:#E3F5EA">🗺️</div><div><h3>任務 3:台灣電力地圖</h3><p>在地圖上找電廠,看看台灣的電大多是用什麼方式做出來的。</p></div></button>
+    <button class="quest" data-go="save"><div class="num" style="background:#E3F5EA">🌱</div><div><h3>任務 4:節能減碳小達人</h3><p>找出家裡浪費能源的地方,寫下自己的節能減碳承諾。</p></div></button>
+    <button class="quest" data-go="quiz"><div class="num" style="background:#F3E8FA">🏆</div><div><h3>任務 5:闖關測驗</h3><p>10 題小挑戰,看看你是不是能源小博士!</p></div></button>
+    <button class="quest" data-go="sources"><div class="num" style="background:#F3EDE2">📚</div><div><h3>資料來源與老師說明</h3><p>網站裡的數字從哪裡來?都可以在這裡查到。</p></div></button>
+  </div>
+</section>
+
+<!-- ================= EARTH ================= -->
+<section class="view" id="v-earth">
+  <div class="section-head">
+    <div class="kicker">任務 1</div>
+    <h2>☀️ 地球的能量從哪裡來?</h2>
+    <p class="lead">能量看不見也摸不到,但它能讓東西<b>變亮、變熱、動起來、發出聲音</b>。地球上的能量主要有三個來源,點點看圖上的發光圓圈!</p>
+  </div>
+
+  <div class="grid g2">
+    <div class="card" style="padding:12px">
+      <svg class="scene" viewBox="0 0 520 380" role="img" aria-label="太陽、地球和月亮的示意圖">
+        <defs>
+          <radialGradient id="sunG"><stop offset="0" stop-color="#FFE9A8"/><stop offset=".6" stop-color="#F5A524"/><stop offset="1" stop-color="#E07B00"/></radialGradient>
+          <radialGradient id="earthCore"><stop offset="0" stop-color="#FFE08A"/><stop offset=".5" stop-color="#F08A3C"/><stop offset="1" stop-color="#B3401F"/></radialGradient>
+        </defs>
+        <rect width="520" height="380" rx="18" fill="#1F2340"/>
+        <g fill="#fff" opacity=".7"><circle cx="40" cy="330" r="1.5"/><circle cx="200" cy="30" r="1.2"/><circle cx="480" cy="340" r="1.5"/><circle cx="260" cy="350" r="1"/><circle cx="470" cy="40" r="1.3"/><circle cx="160" cy="300" r="1"/></g>
+        <!-- light rays -->
+        <g stroke="#FFD66B" stroke-width="3" stroke-dasharray="8 10" opacity=".8">
+          <path d="M175 150 L300 170"><animate attributeName="stroke-dashoffset" from="36" to="0" dur="1s" repeatCount="indefinite"/></path>
+          <path d="M175 190 L295 200"><animate attributeName="stroke-dashoffset" from="36" to="0" dur="1s" repeatCount="indefinite"/></path>
+          <path d="M170 230 L300 232"><animate attributeName="stroke-dashoffset" from="36" to="0" dur="1s" repeatCount="indefinite"/></path>
+        </g>
+        <g class="hot" tabindex="0" role="button" aria-label="太陽" data-src="sun">
+          <circle cx="100" cy="190" r="84" fill="url(#sunG)" class="pulse"/>
+          <circle class="ring" cx="100" cy="190" r="92" fill="none" stroke="#FFD66B" stroke-width="2"/>
+          <text x="100" y="198" text-anchor="middle" font-size="26" fill="#5a2c00" font-weight="700">太陽</text>
+        </g>
+        <g class="hot" tabindex="0" role="button" aria-label="地球內部" data-src="geo">
+          <circle cx="380" cy="200" r="78" fill="#3E86D6"/>
+          <path d="M330 160 q20 -20 45 -8 q15 20 -5 30 q-25 10 -40 -22Z M395 230 q25 -15 40 5 q-5 25 -30 20Z M360 250 q15 5 10 18 q-15 2 -10 -18Z" fill="#5DB36E"/>
+          <path d="M380 200 L380 122 A78 78 0 0 1 458 200Z" fill="url(#earthCore)"/>
+          <circle cx="380" cy="200" r="16" fill="#FFE08A"/>
+          <circle class="ring" cx="380" cy="200" r="86" fill="none" stroke="#F08A3C" stroke-width="2"/>
+          <text x="380" y="304" text-anchor="middle" font-size="20" fill="#fff">地球(切開看內部)</text>
+        </g>
+        <g class="hot" tabindex="0" role="button" aria-label="月亮" data-src="moon">
+          <circle cx="470" cy="70" r="26" fill="#D9D6E0"/>
+          <circle cx="462" cy="64" r="5" fill="#BEBAC9"/><circle cx="478" cy="80" r="4" fill="#BEBAC9"/>
+          <circle class="ring" cx="470" cy="70" r="33" fill="none" stroke="#D9D6E0" stroke-width="2"/>
+          <text x="470" y="122" text-anchor="middle" font-size="18" fill="#fff">月亮</text>
+        </g>
+        <text x="20" y="34" font-size="17" fill="#FFD66B">👆 點太陽、地球、月亮</text>
+      </svg>
+    </div>
+    <div class="card info" id="srcInfo" aria-live="polite">
+      <div class="emoji">👈</div>
+      <h3>先點左邊的圖</h3>
+      <p>太陽、地球內部、月亮,各自帶給我們什麼能量呢?</p>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>🚀 太陽能量的旅行</h3>
+    <p>太陽的光和熱照到地球後,會一站一站傳下去。選一條路線,按「播放」看看能量怎麼旅行:</p>
+    <div class="tabs" id="chainTabs"></div>
+    <div class="chain" id="chain"></div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="big-btn" id="chainPlay">▶ 播放旅程</button>
+      <span class="note" id="chainNote"></span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>🔦 光也是能量!太陽能板小實驗</h3>
+    <div class="demo">
+      <div>
+        <p>拉動下面的拉桿,改變陽光的強弱,看看太陽能板接的小風扇和小燈泡會怎麼樣。</p>
+        <label for="sunSlider"><b>陽光強度:</b><span id="sunVal">中</span></label>
+        <input type="range" id="sunSlider" min="0" max="100" value="55">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="ghost" id="cloudBtn">☁️ 雲飄過來</button>
+          <button class="ghost" id="nightBtn">🌙 天黑了</button>
+          <button class="ghost" id="noonBtn">☀️ 大太陽</button>
+        </div>
+        <div class="think"><b>想一想:</b><span id="sunThink">陽光越強,風扇轉得越快,燈越亮。這代表「光能」被太陽能板變成了「電能」,電能再變成風扇的「動能」和燈泡的「光能」。</span></div>
+      </div>
+      <svg viewBox="0 0 360 260" class="scene" aria-label="太陽能板實驗示意圖">
+        <rect width="360" height="260" rx="16" id="skyRect" fill="#BFE0FF"/>
+        <circle id="sunDot" cx="60" cy="50" r="30" fill="#F5A524"/>
+        <g id="cloud" opacity="0"><ellipse cx="80" cy="60" rx="50" ry="22" fill="#fff"/><ellipse cx="55" cy="50" rx="26" ry="20" fill="#fff"/><ellipse cx="100" cy="46" rx="26" ry="20" fill="#fff"/></g>
+        <g id="rays" stroke="#F5A524" stroke-width="3" stroke-dasharray="6 8"><path d="M85 75 L150 140"/><path d="M70 85 L130 155"/><path d="M95 65 L170 125"/></g>
+        <path d="M110 170 L210 140 L240 175 L140 205Z" fill="#2F5FA8" stroke="#fff" stroke-width="2"/>
+        <path d="M160 155 L190 190 M125 187 L225 157" stroke="#fff" stroke-width="1.5"/>
+        <path d="M200 190 C 230 220, 260 220, 280 200" stroke="#E4572E" stroke-width="3" fill="none"/>
+        <path d="M205 196 C 225 240, 290 240, 300 150" stroke="#2A2833" stroke-width="3" fill="none"/>
+        <!-- fan -->
+        <rect x="276" y="200" width="8" height="40" fill="#5E5A6B"/>
+        <g id="fan" style="transform-origin:280px 190px;transform-box:view-box">
+          <ellipse cx="280" cy="172" rx="7" ry="18" fill="#22AFC0"/>
+          <ellipse cx="280" cy="208" rx="7" ry="18" fill="#22AFC0"/>
+          <ellipse cx="262" cy="190" rx="18" ry="7" fill="#22AFC0"/>
+          <ellipse cx="298" cy="190" rx="18" ry="7" fill="#22AFC0"/>
+        </g>
+        <circle cx="280" cy="190" r="6" fill="#2A2833"/>
+        <!-- bulb -->
+        <circle id="glow" cx="310" cy="120" r="34" fill="#FFE27A" opacity=".5"/>
+        <circle id="bulb" cx="310" cy="120" r="16" fill="#FFE27A" stroke="#C9A400" stroke-width="2"/>
+        <rect x="303" y="135" width="14" height="12" fill="#9C9AA6"/>
+        <rect width="360" height="260" rx="16" id="night" fill="#141633" opacity="0" pointer-events="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>✨ 能量變變變</h3>
+    <p>能量不會憑空出現,也不會憑空消失,只會<b>從一種變成另一種</b>。翻開卡片,看看每樣東西把能量變成了什麼:</p>
+    <p>
+      <span class="etag t-light">光能</span><span class="etag t-heat">熱能</span><span class="etag t-elec">電能</span><span class="etag t-move">動能(會動的能量)</span><span class="etag t-sound">聲能</span><span class="etag t-chem">化學能(藏在食物、燃料、電池裡)</span>
+    </p>
+    <div class="grid g3" id="flips"></div>
+  </div>
+</section>
+
+<!-- ================= POWER ================= -->
+<section class="view" id="v-power">
+  <div class="section-head">
+    <div class="kicker">任務 2</div>
+    <h2>⚙️ 電是怎麼做出來的?</h2>
+    <p class="lead">大部分發電廠都在做同一件事:<b>想辦法讓「發電機」轉起來</b>。發電機裡有磁鐵和一圈圈的銅線,只要它們互相轉動,電就產生了!</p>
+  </div>
+
+  <div class="card">
+    <h3>🔄 自己轉轉看:手搖發電機</h3>
+    <div class="gen-wrap">
+      <div>
+        <p>一直按住(或連續點)下面的按鈕來轉動發電機。轉得越快,燈泡會越亮嗎?</p>
+        <button class="big-btn" id="crank" style="user-select:none;-webkit-user-select:none;touch-action:none">🤚 按住轉動!</button>
+        <p style="margin-top:14px"><b>轉速:</b></p>
+        <div class="meter"><i id="rpm"></i></div>
+        <div class="think"><b>發現:</b><span id="genMsg">還沒轉動,燈泡是暗的。</span></div>
+      </div>
+      <svg viewBox="0 0 360 240" class="scene" aria-label="發電機示意圖">
+        <rect width="360" height="240" rx="16" fill="#F4EEE3"/>
+        <!-- magnet housing -->
+        <circle cx="120" cy="125" r="78" fill="#fff" stroke="#D8CBB4" stroke-width="3"/>
+        <path d="M60 85 A70 70 0 0 1 180 85 L160 100 A46 46 0 0 0 80 100Z" fill="#E4572E"/>
+        <path d="M60 165 A70 70 0 0 0 180 165 L160 150 A46 46 0 0 1 80 150Z" fill="#3E86D6"/>
+        <text x="120" y="78" text-anchor="middle" font-size="16" fill="#fff" font-weight="700">N</text>
+        <text x="120" y="182" text-anchor="middle" font-size="16" fill="#fff" font-weight="700">S</text>
+        <g id="coil" style="transform-origin:120px 125px;transform-box:view-box">
+          <rect x="88" y="113" width="64" height="24" rx="6" fill="#C9822F"/>
+          <path d="M94 113v24M102 113v24M110 113v24M118 113v24M126 113v24M134 113v24M142 113v24" stroke="#8A5617" stroke-width="2"/>
+        </g>
+        <circle cx="120" cy="125" r="6" fill="#2A2833"/>
+        <text x="120" y="226" text-anchor="middle" font-size="15" fill="#5E5A6B">磁鐵+銅線圈=發電機</text>
+        <path d="M198 125 H250 V100" stroke="#2A2833" stroke-width="3" fill="none"/>
+        <path d="M198 140 H280 V100" stroke="#2A2833" stroke-width="3" fill="none"/>
+        <circle id="gglow" cx="265" cy="70" r="46" fill="#FFE27A" opacity="0"/>
+        <circle id="gbulb" cx="265" cy="70" r="22" fill="#EDEAF2" stroke="#9C9AA6" stroke-width="2"/>
+        <rect x="255" y="90" width="20" height="12" fill="#9C9AA6"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>🏭 常見的發電方式</h3>
+    <p>選一種發電方式,按「看發電過程」一步一步了解它的原理。</p>
+    <div class="mtabs" id="mtabs"></div>
+    <div id="mBody"></div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>🧺 分類小遊戲:用得完?用不完?</h3>
+    <p><b>再生能源</b>:大自然會一直補充,幾乎用不完(像陽光、風)。<b>非再生能源</b>:地球上存量有限,用掉就很難再有(像煤、石油)。<br>先點一張卡片,再點它應該放進的籃子。</p>
+    <div class="sort-pool" id="pool"></div>
+    <div class="bins">
+      <button class="bin green" data-bin="re"><h4>🌿 再生能源</h4><div></div></button>
+      <button class="bin gray" data-bin="non"><h4>⛏️ 非再生能源</h4><div></div></button>
+    </div>
+    <p id="sortMsg" class="note" style="margin-top:10px" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- ================= MAP ================= -->
+<section class="view" id="v-map">
+  <div class="section-head">
+    <div class="kicker">任務 3</div>
+    <h2>🗺️ 台灣電力地圖</h2>
+    <p class="lead">台灣的電從哪裡來?點地圖上的圖示認識各地的發電廠,也看看「每 100 度電」裡,各種發電方式各占多少。</p>
+  </div>
+
+  <div class="map-layout">
+    <div class="card" style="padding:14px">
+      <div class="filters" id="filters"></div>
+      <svg id="twmap" viewBox="0 0 400 560" role="img" aria-label="台灣發電廠位置示意地圖"></svg>
+      <p class="note" style="text-align:center;margin:4px 0 0">地圖為示意圖,位置為大約位置,未畫出金門、馬祖。</p>
+    </div>
+    <div>
+      <div class="card" id="plantInfo" aria-live="polite">
+        <div style="font-size:44px">📍</div>
+        <h3>點地圖上的圖示</h3>
+        <p>每個圓圈代表一個發電廠或發電地區。圓圈裡的圖案告訴你它用什麼方式發電。</p>
+        <div class="think"><b>小偵探:</b>仔細看看,為什麼大型火力發電廠幾乎都蓋在<b>海邊</b>呢?點一個火力電廠找答案!</div>
+      </div>
+      <div class="spacer" style="height:18px"></div>
+      <div class="card">
+        <h3>⚡ 2025 年,台灣每 100 度電從哪裡來?</h3>
+        <p class="note">把一年的電想成 100 個格子。點右邊的項目,看看它占了幾格。</p>
+        <div style="display:grid;grid-template-columns:minmax(180px,1fr) 1fr;gap:14px;align-items:start" class="wafflegrid">
+          <div class="waffle" id="waffle" aria-hidden="true"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="think" id="mixMsg"><b>你發現了嗎?</b>台灣大約有 8 成的電,是靠燒天然氣和煤炭的<b>火力發電</b>做出來的。</div>
+        <p class="note">資料:依台電公布的 2025 年(民國114年)發購電量資料整理,四捨五入成整數,所以是「大約」的數字。「其他」包含汽電共生、燃油、抽蓄水力等。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>📈 台灣電力的變化</h3>
+      <ul style="padding-left:22px;margin:0">
+        <li><b>2025 年 5 月 17 日</b>:核三廠 2 號機運轉執照到期停機,台灣所有核電機組都停止發電。</li>
+        <li><b>2026 年</b>:政府評估核二、核三廠有機會再運轉,台電已送出核三廠「再運轉計畫」,由核能安全委員會審查中。</li>
+        <li><b>離岸風電</b>:到 2026 年 6 月,台灣海峽上已經蓋好第 500 座離岸風力機,總規模排名世界第 5。</li>
+        <li><b>政府目標</b>:2030 年讓綠電(再生能源)占發電量約 3 成。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🤔 想一想</h3>
+      <p><b>1.</b> 太陽光電板裝了很多,為什麼發出的電卻只占一小部分?<br><span class="note">提示:晚上有太陽嗎?陰天呢?</span></p>
+      <p><b>2.</b> 台灣的煤炭和天然氣幾乎都是從國外用船運來的,這可能會有什麼問題?</p>
+      <p><b>3.</b> 如果你是能源部長,你會想怎麼搭配各種發電方式?每一種都有優點也有缺點喔!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SAVE ================= -->
+<section class="view" id="v-save">
+  <div class="section-head">
+    <div class="kicker">任務 4</div>
+    <h2>🌱 節能減碳小達人</h2>
+    <p class="lead"><b>節能</b>就是節約能源、不浪費;<b>減碳</b>就是減少排放二氧化碳。為什麼這兩件事這麼重要?先來看看地球的「棉被」。</p>
+  </div>
+
+  <div class="card">
+    <h3>🌍 地球蓋上了太厚的棉被</h3>
+    <div class="gh">
+      <div>
+        <p>燒煤、燒天然氣、燒汽油時,會排放<b>二氧化碳</b>。二氧化碳在空中像一條棉被包住地球,本來可以讓地球保持溫暖;可是棉被越蓋越厚,熱跑不出去,地球就會越來越熱,這就是<b>全球暖化</b>。</p>
+        <label for="co2"><b>人類燒掉的燃料:</b><span id="co2Val">少</span></label>
+        <input type="range" id="co2" min="0" max="100" value="15" style="accent-color:#8A6A44">
+        <div class="think" id="co2Msg"><b>地球狀況:</b>舒服的溫度 😊</div>
+      </div>
+      <svg viewBox="0 0 320 260" class="scene" aria-label="溫室效應示意圖">
+        <rect width="320" height="260" rx="16" fill="#1F2340"/>
+        <circle cx="40" cy="40" r="22" fill="#F5A524"/>
+        <circle id="blanket" cx="170" cy="150" r="96" fill="#9C8F80" opacity=".2"/>
+        <circle id="globe" cx="170" cy="150" r="66" fill="#3E86D6"/>
+        <path d="M128 120 q20 -20 45 -8 q15 20 -5 30 q-25 10 -40 -22Z M185 175 q25 -15 40 5 q-5 25 -30 20Z" fill="#5DB36E"/>
+        <text id="face" x="170" y="160" text-anchor="middle" font-size="34">😊</text>
+        <g id="therm" transform="translate(286 60)">
+          <rect x="-7" y="0" width="14" height="140" rx="7" fill="#fff"/>
+          <circle cx="0" cy="150" r="14" fill="#E4572E"/>
+          <rect id="mercury" x="-4" y="110" width="8" height="40" fill="#E4572E"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="card">
+    <h3>🏠 找一找:家裡哪裡在浪費能源?</h3>
+    <p>下面每一格都有一個「浪費能源」的壞習慣。點一下,把它變成節能好習慣!全部改好,地球會很開心喔。</p>
+    <div style="display:flex;align-items:center;gap:12px;margin:8px 0 16px">
+      <span>🌍 地球開心度</span>
+      <div class="earthbar" style="flex:1"><i id="ebar"></i></div>
+      <b id="ecount">0/10</b>
+    </div>
+    <div class="appl" id="appl"></div>
+    <div class="card tipbox" id="tip" style="margin-top:16px;background:#FBF7F0;box-shadow:none" aria-live="polite">
+      <b>💡 小知識會出現在這裡</b>
+      <p class="note">點上面的卡片試試看。</p>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="grid g2">
+    <div class="card pledge">
+      <h3>✋ 我的節能減碳承諾</h3>
+      <p class="note">勾選你願意做到的事,每勾一項,右邊的小樹就會長出新葉子。</p>
+      <div id="pledges"></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <svg class="tree" viewBox="0 0 300 300" aria-label="承諾小樹">
+        <ellipse cx="150" cy="282" rx="110" ry="12" fill="#E3D7C2"/>
+        <path d="M140 285 L145 170 Q150 150 155 170 L160 285Z" fill="#8A6A44"/>
+        <path d="M150 210 Q120 190 105 170 M150 195 Q180 175 195 150" stroke="#8A6A44" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <g id="leaves"></g>
+      </svg>
+      <h3 id="treeTitle">小樹苗等著你</h3>
+      <p id="treeMsg" class="note">勾選左邊的承諾,讓它長大吧!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section class="view" id="v-quiz">
+  <div class="section-head">
+    <div class="kicker">任務 5</div>
+    <h2>🏆 能源小博士闖關</h2>
+    <p class="lead">一共 10 題,選出你認為正確的答案。答錯也沒關係,看完說明就會懂!</p>
+  </div>
+  <div class="card" id="quizBox" style="max-width:780px"></div>
+</section>
+
+<!-- ================= SOURCES ================= -->
+<section class="view" id="v-sources">
+  <div class="section-head">
+    <div class="kicker">給老師和家長</div>
+    <h2>📚 資料來源與使用說明</h2>
+    <p class="lead">本網站的數字都來自政府機關、台電公司公開資料與主要新聞媒體報導,並改寫成四年級學生看得懂的說法。資料整理時間:2026 年 11 月。</p>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>主要資料來源</h3>
+      <ul class="src">
+        <li>台灣電力公司〈淨發購電量〉每月統計(民國114年):<a href="https://www.taipower.com.tw/media/tcfl201w/11411淨發購電量.pdf" target="_blank" rel="noopener">114年11月資料</a>等。地圖頁「每100度電」由 2025 年各月資料加權估算後四捨五入。</li>
+        <li>科技新報整理台電資料:2025 年台電系統發購電量 2,524.4 億度,火力 81.3%、再生能源 12.7%、核能 1.2%。<a href="https://technews.tw/2026/03/20/taiwan-energy-policy/" target="_blank" rel="noopener">連結</a></li>
+        <li>中央社:核三廠 2 號機於 2025 年 5 月 17 日停機。<a href="https://www.cna.com.tw/news/afe/202505170134.aspx" target="_blank" rel="noopener">連結</a></li>
+        <li>公視新聞:台電核三再運轉計畫送核安會;經濟部長表示最快 2028 年重啟。<a href="https://news.pts.org.tw/article/797158" target="_blank" rel="noopener">連結</a></li>
+        <li>公視新聞/經濟部能源署:離岸風機達 500 座、4.8GW、全球第 5;2025 年綠電 386 億度。<a href="https://news.pts.org.tw/article/813128" target="_blank" rel="noopener">連結</a></li>
+        <li>經濟部長談話:2025 年底太陽光電設置量 15.4GW。<a href="https://money.udn.com/money/story/7307/9312179" target="_blank" rel="noopener">連結</a></li>
+        <li>台電節電建議:冷氣 26~28 度搭配電風扇,每調高 1 度約省 6% 冷氣用電。<a href="https://health.tvbs.com.tw/nutrition/347776" target="_blank" rel="noopener">連結</a></li>
+        <li>臺師大能源教育資源中心〈冷氣節能小偵探〉學習單。<a href="https://energy.mt.ntnu.edu.tw/upload/school/附件1-能源教育學習單2024冷氣節能小偵探.pdf" target="_blank" rel="noopener">連結</a></li>
+      </ul>
+      <h3 style="margin-top:18px">延伸學習網站</h3>
+      <ul class="src">
+        <li><a href="https://www.taipower.com.tw/" target="_blank" rel="noopener">台灣電力公司</a>(今日電力資訊、各電廠介紹)</li>
+        <li><a href="https://www.moeaea.gov.tw/" target="_blank" rel="noopener">經濟部能源署</a></li>
+        <li><a href="https://energy.mt.ntnu.edu.tw/" target="_blank" rel="noopener">能源教育資源總中心(臺師大)</a></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>課堂使用建議</h3>
+      <ol style="padding-left:22px">
+        <li><b>任務 1</b> 對應「光和能源」:太陽是地球主要能量來源、光能可以轉換成電能。可讓學生先用太陽能板拉桿實驗做預測再操作。</li>
+        <li><b>任務 2</b> 先玩手搖發電機,建立「讓發電機轉動」的共同概念,再比較各種發電方式;太陽光電是唯一不靠轉動的方式,可當作討論點。</li>
+        <li><b>任務 3</b> 搭配「想一想」三題做小組討論,特別是「為什麼電廠蓋在海邊」「為什麼光電裝了很多但發電占比不高」。</li>
+        <li><b>任務 4</b> 可延伸為回家學習單:和家人一起檢查家中電器。</li>
+        <li><b>任務 5</b> 作為總結性評量。</li>
+      </ol>
+      <div class="think"><b>關於能源議題:</b>各種發電方式都有優點和限制,網站中盡量呈現事實,讓學生練習比較與思考,而不替學生下結論。核電再運轉等議題仍在審查與討論中,數據會隨時間更新,建議上課前到台電網站查看最新資料。</div>
+      <p class="note">網站中的電廠位置為示意;發電占比為四捨五入的大約數值。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">能源探險隊・國小四年級「光和能源」「節能減碳」自主學習網站|資料整理:2026 年 11 月|資料來源見「📚 資料來源」</div>
+</footer>
+
+<script>
+/* ---------------- helpers ---------------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------------- routing + stamps ---------------- */
+const VIEWS = ['home','earth','power','map','save','quiz','sources'];
+const STAMP_VIEWS = [['earth','☀️'],['power','⚙️'],['map','🗺️'],['save','🌱'],['quiz','🏆']];
+let visited = new Set(store.get('energy-visited', []));
+function renderStamps(){
+  $('#stamps').innerHTML = STAMP_VIEWS.map(([v,e]) => `<div class="stamp ${visited.has(v)?'got':''}" title="${v}">${visited.has(v)?e:'?'}</div>`).join('') +
+    (visited.size >= 5 ? '<div style="align-self:center;font-weight:700;color:var(--leaf)">🎉 全部完成!你是能源探險隊員了!</div>' : '');
+}
+function show(v){
+  if(!VIEWS.includes(v)) v = 'home';
+  $$('.view').forEach(el => el.classList.toggle('on', el.id === 'v-'+v));
+  $$('.nav button').forEach(b => b.classList.toggle('on', b.dataset.go === v));
+  if(v !== 'home' && v !== 'sources'){ visited.add(v); store.set('energy-visited', [...visited]); }
+  renderStamps();
+  window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if(b){ e.preventDefault(); const v = b.dataset.go; if(location.hash !== '#'+v) location.hash = v; else show(v); }
+});
+$('.brand').addEventListener('click', e => { e.preventDefault(); location.hash = 'home'; });
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+
+/* ---------------- EARTH: sources ---------------- */
+const SRC = {
+  sun: {e:'☀️', t:'太陽:地球最重要的能量來源', html:`
+    <p>太陽每天送來大量的<b>光能</b>和<b>熱能</b>。地球上大部分的能量,追根究柢都來自太陽:</p>
+    <ul style="padding-left:22px">
+      <li>🌿 植物靠陽光行<b>光合作用</b>製造養分,動物和人吃了植物才有力氣。</li>
+      <li>🌬️ 太陽把地面曬得有的熱、有的涼,空氣流動就變成<b>風</b>。</li>
+      <li>🌧️ 太陽讓水蒸發變成雲,下雨後形成河流,所以<b>水力</b>也跟太陽有關。</li>
+      <li>⛏️ 煤、石油、天然氣是很久很久以前的生物變成的,裡面藏的是<b>古代的太陽能量</b>。</li>
+    </ul>`},
+  geo: {e:'🌋', t:'地球內部:地熱能', html:`
+    <p>地球的內部非常非常熱!這些熱會從地底跑上來,形成<b>火山</b>和<b>溫泉</b>。</p>
+    <p>台灣位在板塊交界,有很多溫泉(像北投、礁溪)。人們可以抽取地底的熱水和蒸氣來推動機器發電,這就是<b>地熱發電</b>。宜蘭的<b>清水地熱</b>就是台灣的地熱發電廠。</p>`},
+  moon: {e:'🌙', t:'月亮:潮汐的能量', html:`
+    <p>月亮(還有太陽)的<b>引力</b>會拉動海水,讓海水每天漲潮、退潮,這叫做<b>潮汐</b>。</p>
+    <p>海水一進一出的力量也是一種能量,有些國家用它來發電。台灣目前還在研究中,沒有大規模使用。</p>`}
+};
+function showSrc(k){
+  const s = SRC[k];
+  $('#srcInfo').innerHTML = `<div class="emoji">${s.e}</div><h3>${s.t}</h3>${s.html}`;
+}
+$$('.hot').forEach(h => {
+  h.addEventListener('click', () => showSrc(h.dataset.src));
+  h.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showSrc(h.dataset.src); }});
+});
+
+/* ---------------- EARTH: chains ---------------- */
+const CHAINS = {
+  food: {name:'🌿 變成食物', note:'所以我們吃飯得到的力氣,其實來自太陽!', steps:[
+    ['☀️','太陽','送出光能'],['🌱','植物','光合作用,把光能存成養分'],['🍚','食物','米飯、蔬菜裡藏著化學能'],['🏃','我們','吃下去,變成跑跳的動能和體溫']]},
+  wind: {name:'🌬️ 變成風', note:'風力發電用的風,也是太陽送來的!', steps:[
+    ['☀️','太陽','照熱地面'],['🌡️','冷熱不均','有的地方熱、有的地方涼'],['🌬️','空氣流動','熱空氣上升,冷空氣補過來,就是風'],['💨','風力發電','風吹動葉片,轉動發電機']]},
+  water: {name:'🌧️ 變成雨水', note:'水力發電的水,是太陽幫忙「搬」上山的!', steps:[
+    ['☀️','太陽','照熱海洋和湖泊'],['☁️','蒸發成雲','水變成水蒸氣飄上天空'],['🌧️','下雨','雨落到高山,流進河流和水庫'],['💧','水力發電','水往下流,推動水輪機發電']]},
+  fossil: {name:'⛏️ 變成化石燃料', note:'化石燃料要幾百萬年才能形成,用掉就很難再有,所以是「非再生能源」。', steps:[
+    ['☀️','很久很久以前的太陽','讓古代植物生長'],['🌳','古代生物','死後被泥土一層層埋起來'],['⏳','幾百萬年','在地底高溫高壓下慢慢變化'],['🪨','煤、石油、天然氣','燒掉時放出古代太陽的能量']]},
+};
+let curChain = 'food', chainTimer = null;
+function renderChain(lit=-1){
+  const c = CHAINS[curChain];
+  $('#chainTabs').innerHTML = Object.entries(CHAINS).map(([k,v]) => `<button class="${k===curChain?'on':''}" data-chain="${k}">${v.name}</button>`).join('');
+  $('#chain').innerHTML = c.steps.map((s,i) => `${i?`<div class="arrow ${i<=lit?'lit':''}">➜</div>`:''}<div class="step ${i<=lit?'lit':''}"><div class="e">${s[0]}</div><b>${s[1]}</b><small>${s[2]}</small></div>`).join('');
+  $('#chainNote').textContent = lit >= c.steps.length-1 ? '💡 ' + c.note : '';
+}
+$('#chainTabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-chain]'); if(!b) return;
+  clearInterval(chainTimer); curChain = b.dataset.chain; renderChain(-1);
+});
+$('#chainPlay').addEventListener('click', () => {
+  clearInterval(chainTimer); let i = 0; renderChain(0);
+  chainTimer = setInterval(() => { i++; renderChain(i); if(i >= CHAINS[curChain].steps.length-1) clearInterval(chainTimer); }, 1100);
+});
+renderChain(-1);
+
+/* ---------------- EARTH: solar slider ---------------- */
+let fanAngle = 0, sunLevel = 55;
+function setSun(v){
+  sunLevel = +v; $('#sunSlider').value = v;
+  const lv = v < 8 ? '沒有' : v < 35 ? '弱' : v < 70 ? '中' : '強';
+  $('#sunVal').textContent = lv;
+  const k = v/100;
+  $('#glow').setAttribute('opacity', (k*0.85).toFixed(2));
+  $('#bulb').setAttribute('fill', k < .08 ? '#EDEAF2' : '#FFE27A');
+  $('#rays').setAttribute('opacity', k.toFixed(2));
+  $('#sunDot').setAttribute('opacity', Math.max(.15, k).toFixed(2));
+  $('#night').setAttribute('opacity', (Math.max(0, .35 - k) * 1.6).toFixed(2));
+  $('#cloud').setAttribute('opacity', v > 15 && v < 40 ? 1 : 0);
+  $('#sunThink').textContent = v < 8
+    ? '沒有陽光,太陽能板就發不出電,風扇停了、燈也不亮。所以太陽光電晚上不能發電喔!'
+    : v < 40 ? '陽光變弱了,電變少,風扇轉得比較慢、燈比較暗。陰天時太陽光電發的電會變少。'
+    : '陽光越強,風扇轉得越快,燈越亮。這代表「光能」被太陽能板變成了「電能」,電能再變成風扇的「動能」和燈泡的「光能」。';
+}
+$('#sunSlider').addEventListener('input', e => setSun(e.target.value));
+$('#cloudBtn').addEventListener('click', () => setSun(28));
+$('#nightBtn').addEventListener('click', () => setSun(0));
+$('#noonBtn').addEventListener('click', () => setSun(100));
+setSun(55);
+
+/* ---------------- EARTH: flip cards ---------------- */
+const T = {light:['t-light','光能'],heat:['t-heat','熱能'],elec:['t-elec','電能'],move:['t-move','動能'],sound:['t-sound','聲能'],chem:['t-chem','化學能']};
+const tag = k => `<span class="etag ${T[k][0]}">${T[k][1]}</span>`;
+const FLIPS = [
+  ['💡','電燈','elec',['light','heat'],'電燈把電變成光,摸起來也會有點熱。'],
+  ['🌀','電風扇','elec',['move'],'馬達把電能變成扇葉轉動的動能。'],
+  ['🔆','太陽能計算機','light',['elec'],'小小的太陽能板把光變成電。'],
+  ['🔊','喇叭','elec',['sound'],'電讓喇叭震動,發出聲音。'],
+  ['🔥','營火','chem',['light','heat'],'木頭裡的化學能,燒起來變成光和熱。'],
+  ['🔦','手電筒','chem',['elec','light'],'電池的化學能先變電能,再變光能。'],
+  ['🚲','腳踏車發電燈','move',['elec','light'],'踩踏板的動能轉動小發電機,讓燈亮起來。'],
+  ['🍙','吃飯糰','chem',['move','heat'],'食物的化學能讓我們能動,也讓身體保持溫暖。'],
+];
+$('#flips').innerHTML = FLIPS.map(([e,n,from,to,d]) => `
+  <button class="flip" aria-label="${n},點一下翻面">
+    <div class="in">
+      <div class="f"><div class="e">${e}</div><span>${n}</span><small>點我翻面</small></div>
+      <div class="b"><div>${tag(from)} ➜ ${to.map(tag).join(' ')}</div><div style="margin-top:8px">${d}</div></div>
+    </div>
+  </button>`).join('');
+$$('#flips .flip').forEach(f => f.addEventListener('click', () => f.classList.toggle('on')));
+
+/* ---------------- POWER: crank generator ---------------- */
+let speed = 0, holding = false, coilAngle = 0;
+const crank = $('#crank');
+const start = e => { e.preventDefault(); holding = true; speed = Math.min(100, speed + 8); };
+const stop = () => holding = false;
+crank.addEventListener('pointerdown', start);
+['pointerup','pointerleave','pointercancel'].forEach(ev => crank.addEventListener(ev, stop));
+crank.addEventListener('keydown', e => { if(e.key===' '||e.key==='Enter'){ e.preventDefault(); speed = Math.min(100, speed + 12); }});
+function genMsg(){
+  return speed < 3 ? '還沒轉動,燈泡是暗的。'
+    : speed < 35 ? '轉得慢,只發出一點點電,燈泡微微亮。'
+    : speed < 75 ? '轉快一點,電變多了,燈泡更亮!'
+    : '轉得超快!電最多,燈泡最亮。發電廠就是用很大的力量,讓巨大的發電機一直快速轉動。';
+}
+
+/* animation loop for fans/coil */
+let last = performance.now();
+function loop(t){
+  const dt = Math.min(50, t - last); last = t;
+  // generator
+  if(holding) speed = Math.min(100, speed + dt*0.09); else speed = Math.max(0, speed - dt*0.03);
+  coilAngle = (coilAngle + speed*dt*0.06) % 360;
+  $('#coil').style.transform = `rotate(${coilAngle}deg)`;
+  $('#rpm').style.width = speed + '%';
+  $('#gglow').setAttribute('opacity', (speed/100*0.9).toFixed(2));
+  $('#gbulb').setAttribute('fill', speed > 3 ? `hsl(48, 100%, ${92 - speed*0.25}%)` : '#EDEAF2');
+  const m = genMsg(); if($('#genMsg').textContent !== m) $('#genMsg').textContent = m;
+  // solar fan
+  fanAngle = (fanAngle + (sunLevel < 8 ? 0 : sunLevel) * dt * 0.02) % 360;
+  $('#fan').style.transform = `rotate(${fanAngle}deg)`;
+  // method diagram turbine
+  const tb = $('#mTurbine'); if(tb){ mAngle = (mAngle + dt*0.25) % 360; tb.style.transform = `rotate(${mAngle}deg)`; }
+  requestAnimationFrame(loop);
+}
+let mAngle = 0;
+requestAnimationFrame(loop);
+
+/* ---------------- POWER: methods ---------------- */
+const METHODS = {
+  gas: {e:'🔥', n:'燃氣火力', color:'var(--gas)', turn:true,
+    intro:'燃燒<b>天然氣</b>,用高溫氣體推動渦輪。台灣目前<b>最多的電</b>就是這樣來的。',
+    steps:[['🔥','燒天然氣','產生又熱又快的氣體'],['🌀','推動燃氣渦輪','熱氣一衝,渦輪轉起來'],['♨️','剩下的熱再利用','把水煮成蒸氣,再推第二個渦輪'],['⚡','發電機發電','電送到家家戶戶']],
+    conv:['chem','heat','move','elec'],
+    good:['比燒煤乾淨,排放的二氧化碳和空氣污染較少','可以很快開機、關機,配合大家用電多或少'],
+    warn:['燃燒時還是會排放二氧化碳','台灣的天然氣幾乎都要用船從國外運來,不容易大量儲存'],
+    tw:'桃園的<b>大潭電廠</b>是台灣最大的燃氣電廠;台中、興達、通霄也有燃氣機組。'},
+  coal: {e:'🪨', n:'燃煤火力', color:'var(--coal)', turn:true,
+    intro:'燃燒<b>煤炭</b>,把水煮成高溫高壓的水蒸氣,用蒸氣推動渦輪。',
+    steps:[['🪨','燒煤炭','在鍋爐裡燒出大量的熱'],['♨️','把水煮成蒸氣','高溫高壓的水蒸氣力量很大'],['🌀','蒸氣推動渦輪','渦輪高速轉動'],['⚡','發電機發電','用過的蒸氣再冷卻變回水']],
+    conv:['chem','heat','move','elec'],
+    good:['可以 24 小時穩定、大量發電','燃料成本比較便宜'],
+    warn:['排放很多二氧化碳,也會造成空氣污染','煤炭幾乎全靠進口,用完就沒有了'],
+    tw:'<b>台中電廠</b>(台中龍井)是台灣很大的燃煤電廠,另外還有林口、興達、麥寮等電廠。台灣正逐步減少燒煤。'},
+  hydro: {e:'💧', n:'水力', color:'var(--hydro)', turn:true,
+    intro:'利用<b>高處的水往下流</b>的力量,推動水輪機轉動。',
+    steps:[['⛰️','水庫存水','把雨水攔在高處'],['💧','水往下衝','打開閘門,水快速流下'],['🌀','推動水輪機','水的力量讓水輪機轉動'],['⚡','發電機發電','水流回河裡,不會被用掉']],
+    conv:['move','elec'],
+    good:['不用燒燃料,不排放二氧化碳','可以很快開始發電'],
+    warn:['要蓋水庫,可能改變河川和生物的家','不下雨、缺水時發電量會變少'],
+    tw:'日月潭附近的<b>明潭、大觀電廠</b>是「抽蓄水力」:用電少時把水抽到上面的水池,用電多時再放水發電,就像一顆超大電池!台中的<b>大甲溪</b>也有多座水力電廠。'},
+  wind: {e:'🌬️', n:'風力', color:'var(--wind)', turn:true,
+    intro:'讓<b>風</b>吹動大大的葉片,葉片帶動發電機轉動。',
+    steps:[['🌬️','風吹過來','冬天的東北季風特別強'],['🌀','吹動葉片','一片葉片可能比籃球場還長'],['⚙️','帶動發電機','藏在風機頂端的機艙裡'],['⚡','送出電力','海上的電用海底電纜送上岸']],
+    conv:['move','elec'],
+    good:['風用不完,是再生能源','發電時不排放二氧化碳'],
+    warn:['沒有風就不能發電,風太大也要停機','蓋在海上的風機很貴,也要注意對海洋生物和鳥類的影響'],
+    tw:'台灣海峽的風又強又穩,是世界有名的好風場。<b>彰化外海</b>、<b>苗栗外海</b>有許多離岸風場,澎湖也有風力發電。'},
+  solar: {e:'☀️', n:'太陽光電', color:'var(--solar)', turn:false,
+    intro:'太陽光電板能<b>直接把光變成電</b>,是唯一<b>不用轉動發電機</b>的發電方式!',
+    steps:[['☀️','陽光照射','光照在太陽光電板上'],['🔲','光電板吸收光','板子裡的特殊材料(矽)被光「推」了一下'],['➰','產生電流','不用轉動、沒有聲音'],['🏠','送到家裡用','可以裝在屋頂、空地、水面上']],
+    conv:['light','elec'],
+    good:['陽光用不完,是再生能源','發電時不排放二氧化碳,也很安靜','可以裝在學校和家裡的屋頂'],
+    warn:['晚上不能發電,陰天、雨天發得少','需要很大的面積,要小心不要破壞自然環境'],
+    tw:'南部陽光比較多,台南、嘉義、彰化、高雄等地有許多大型太陽光電場。到 2025 年底,全台太陽光電設備已超過 15GW。'},
+  nuke: {e:'⚛️', n:'核能', color:'var(--nuke)', turn:true,
+    intro:'讓很小很小的<b>鈾原子</b>分裂,放出非常多的熱,用熱把水煮成蒸氣推動渦輪。',
+    steps:[['⚛️','鈾原子分裂','一點點燃料就能放出很多熱'],['♨️','把水煮成蒸氣','跟火力電廠一樣要煮水'],['🌀','蒸氣推動渦輪','渦輪轉動'],['⚡','發電機發電','可以 24 小時穩定發電']],
+    conv:['heat','move','elec'],
+    good:['發電時幾乎不排放二氧化碳','可以穩定、大量發電'],
+    warn:['用過的核燃料(核廢料)有輻射,要安全保存非常非常久','必須非常注意安全,防止核災'],
+    tw:'2025 年 5 月核三廠停機後,台灣暫時沒有核能發電。政府正評估核二、核三廠再運轉,核三廠的計畫正在<b>核能安全委員會</b>審查中。'},
+  geo: {e:'🌋', n:'地熱', color:'var(--geo)', turn:true,
+    intro:'抽出地底下的<b>熱水和蒸氣</b>,用它來推動渦輪。',
+    steps:[['🌋','地底很熱','地球內部的熱讓地下水變得很燙'],['♨️','抽出熱蒸氣','鑽井把熱水和蒸氣抽上來'],['🌀','推動渦輪','蒸氣讓渦輪轉動'],['⚡','發電機發電','用完的水再打回地底']],
+    conv:['heat','move','elec'],
+    good:['地熱幾乎不受天氣影響,白天晚上都能發電','排放的二氧化碳很少'],
+    warn:['要找到夠熱的地方,鑽井又難又貴','台灣目前規模還很小'],
+    tw:'宜蘭的<b>清水地熱電廠</b>是台灣代表性的地熱發電廠。台灣溫泉多,地熱的潛力很大。'},
+};
+let curM = 'gas', mStep = -1, mTimer = null;
+function turbineSVG(color, turn){
+  if(!turn) return `<svg viewBox="0 0 120 120" width="110" aria-hidden="true"><rect x="10" y="30" width="100" height="60" rx="6" fill="#2F5FA8"/><path d="M43 30v60M77 30v60M10 60h100" stroke="#fff" stroke-width="2"/><text x="60" y="112" text-anchor="middle" font-size="13" fill="#5E5A6B">不用轉也能發電</text></svg>`;
+  return `<svg viewBox="0 0 120 120" width="110" aria-hidden="true"><circle cx="60" cy="56" r="46" fill="#F4EEE3"/><g id="mTurbine" style="transform-origin:60px 56px;transform-box:view-box">${[0,60,120,180,240,300].map(a=>`<path d="M60 56 L60 16 Q74 26 66 56Z" fill="${color}" transform="rotate(${a} 60 56)"/>`).join('')}</g><circle cx="60" cy="56" r="8" fill="#2A2833"/><text x="60" y="114" text-anchor="middle" font-size="13" fill="#5E5A6B">渦輪轉動中</text></svg>`;
+}
+function renderMethod(){
+  const m = METHODS[curM];
+  $('#mtabs').innerHTML = Object.entries(METHODS).map(([k,v]) => `<button class="${k===curM?'on':''}" data-m="${k}" style="${k===curM?`border-color:${v.color}`:''}"><span class="e">${v.e}</span>${v.n}</button>`).join('');
+  $('#mBody').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px"><h3 style="color:${m.color}">${m.e} ${m.n}發電</h3><p>${m.intro}</p>
+      <div class="conv"><b>能量變身:</b> ${m.conv.map(tag).join(' ➜ ')}</div></div>
+      ${turbineSVG(m.color, m.turn)}
+    </div>
+    <div class="chain" id="mChain" style="margin:10px 0 12px"></div>
+    <button class="big-btn blue" id="mPlay">▶ 看發電過程</button>
+    <div class="spacer" style="height:18px"></div>
+    <div class="proscons">
+      <div class="pc good"><b>👍 優點</b><ul>${m.good.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div class="pc warn"><b>⚠️ 要注意</b><ul>${m.warn.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    </div>
+    <div class="think"><b>📍 在台灣:</b>${m.tw}</div>`;
+  renderMSteps();
+  $('#mPlay').addEventListener('click', () => {
+    clearInterval(mTimer); mStep = 0; renderMSteps();
+    mTimer = setInterval(() => { mStep++; renderMSteps(); if(mStep >= 3) clearInterval(mTimer); }, 1100);
+  });
+}
+function renderMSteps(){
+  const m = METHODS[curM];
+  $('#mChain').innerHTML = m.steps.map((s,i) => `${i?`<div class="arrow ${i<=mStep?'lit':''}">➜</div>`:''}<div class="step ${i<=mStep?'lit':''}"><div class="e">${s[0]}</div><b>${s[1]}</b><small>${s[2]}</small></div>`).join('');
+}
+$('#mtabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if(!b) return;
+  clearInterval(mTimer); curM = b.dataset.m; mStep = -1; renderMethod();
+});
+renderMethod();
+
+/* ---------------- POWER: sort game ---------------- */
+const SORT = [['☀️ 太陽能','re'],['🌬️ 風力','re'],['💧 水力','re'],['🌋 地熱','re'],['🪨 煤炭','non'],['🛢️ 石油','non'],['🔥 天然氣','non'],['⚛️ 鈾(核能燃料)','non']];
+let sortLeft = [], sel = null;
+function initSort(){
+  sortLeft = SORT.map((s,i)=>i).sort(()=>Math.random()-.5);
+  $$('.bin div').forEach(d => d.innerHTML = '');
+  sel = null; renderPool(); $('#sortMsg').textContent = '';
+}
+function renderPool(){
+  $('#pool').innerHTML = sortLeft.length ? sortLeft.map(i => `<button class="chip ${sel===i?'sel':''}" data-i="${i}">${SORT[i][0]}</button>`).join('')
+    : '<span>🎉 全部分對了!<button class="ghost" id="sortAgain" style="margin-left:8px">再玩一次</button></span>';
+  const again = $('#sortAgain'); if(again) again.addEventListener('click', initSort);
+}
+$('#pool').addEventListener('click', e => {
+  const c = e.target.closest('[data-i]'); if(!c) return;
+  sel = +c.dataset.i; renderPool(); $('#sortMsg').textContent = `選好了「${SORT[sel][0]}」,現在點一個籃子。`;
+});
+$$('.bin').forEach(bin => bin.addEventListener('click', () => {
+  if(sel === null){ $('#sortMsg').textContent = '先點上面的一張卡片喔!'; return; }
+  const [name, ans] = SORT[sel];
+  if(ans === bin.dataset.bin){
+    bin.querySelector('div').insertAdjacentHTML('beforeend', `<span class="chip">${name}</span>`);
+    sortLeft = sortLeft.filter(i => i !== sel); sel = null;
+    $('#sortMsg').textContent = '✅ 答對了!';
+  } else {
+    bin.classList.remove('shake'); void bin.offsetWidth; bin.classList.add('shake');
+    $('#sortMsg').textContent = ans === 're' ? `❌ 再想想:${name}是大自然會一直補充的喔!` : `❌ 再想想:${name}在地球上的存量有限,用掉就很難再有。`;
+  }
+  renderPool();
+}));
+initSort();
+
+/* ---------------- MAP ---------------- */
+const TYPES = {
+  gas:{n:'燃氣', c:'#4A78D0', e:'🔥'}, coal:{n:'燃煤', c:'#56535F', e:'🪨'},
+  hydro:{n:'水力', c:'#2F6FB5', e:'💧'}, wind:{n:'風力', c:'#22AFC0', e:'🌬️'},
+  solar:{n:'太陽光電', c:'#F2B300', e:'☀️'}, nuke:{n:'核能(停機中)', c:'#9156B8', e:'⚛️'}, geo:{n:'地熱', c:'#D2643A', e:'🌋'}
+};
+const PLANTS = [
+  {n:'大潭電廠', t:'gas', lon:121.04, lat:25.04, where:'桃園市觀音區', d:'台灣<b>最大的燃氣電廠</b>,也是全台發電量很大的電廠之一。旁邊有接收天然氣的港口設施。', why:'火力電廠蓋在海邊,是因為燃料要靠<b>大船從國外運來</b>,而且發電時需要大量<b>海水來冷卻</b>機器。'},
+  {n:'林口電廠', t:'coal', lon:121.30, lat:25.12, where:'新北市林口區', d:'使用較新的燃煤技術,供應北部用電。', why:'靠海方便煤船靠岸卸煤,也能用海水冷卻。'},
+  {n:'通霄電廠', t:'gas', lon:120.67, lat:24.49, where:'苗栗縣通霄鎮', d:'中部的燃氣電廠,舊機組陸續更新成效率更高的新機組。', why:'在海邊方便取用海水冷卻。'},
+  {n:'台中電廠', t:'coal', lon:120.49, lat:24.21, where:'台中市龍井區', d:'台灣規模很大的<b>燃煤電廠</b>,也正在增加燃氣機組,逐步減少燒煤。', why:'旁邊就是台中港,煤炭可以直接用船運到。'},
+  {n:'麥寮電廠', t:'coal', lon:120.20, lat:23.79, where:'雲林縣麥寮鄉', d:'民間企業經營的燃煤電廠,電賣給台電再送給大家用。', why:'位在海邊的工業港區,方便運送燃料。'},
+  {n:'興達電廠', t:'coal', lon:120.20, lat:22.86, where:'高雄市永安區', d:'南部重要的火力電廠,有燃煤也有燃氣機組;燃煤機組正陸續除役,改由新的燃氣機組接手。', why:'靠海,有天然氣接收站和港口。'},
+  {n:'核二廠', t:'nuke', lon:121.66, lat:25.20, where:'新北市萬里區', d:'2023 年兩部機組都已停止運轉。政府正在評估它是否能再運轉。', why:'核電廠也需要大量海水冷卻,所以都蓋在海邊。'},
+  {n:'核三廠', t:'nuke', lon:120.75, lat:21.96, where:'屏東縣恆春鎮', d:'2025 年 5 月 17 日 2 號機停機後,台灣暫時沒有核電。台電已提出<b>再運轉計畫</b>,正由核能安全委員會審查。', why:'需要大量海水冷卻,所以蓋在海邊。'},
+  {n:'明潭・大觀電廠', t:'hydro', lon:120.88, lat:23.83, where:'南投縣水里鄉(日月潭附近)', d:'<b>抽蓄水力</b>電廠:半夜用電少時把水抽上去,傍晚用電多時放水發電,像一顆超大電池。', why:'需要有高低落差的兩個水池,日月潭剛好在高處。'},
+  {n:'大甲溪水力電廠群', t:'hydro', lon:121.10, lat:24.25, where:'台中市和平區', d:'沿著大甲溪蓋了好幾座水力電廠,像德基、青山、谷關。', why:'高山河流落差大,水往下衝的力量強。'},
+  {n:'彰化外海離岸風場', t:'wind', lon:120.18, lat:24.08, where:'彰化縣外海', d:'台灣海峽風又強又穩,這裡有很多大型<b>離岸風力機</b>,是台灣離岸風電最集中的地方。', why:'海上沒有山和房子擋風,風比陸地更強更穩定。'},
+  {n:'苗栗外海風場', t:'wind', lon:120.70, lat:24.73, where:'苗栗縣外海', d:'台灣<b>第一座</b>商業運轉的離岸風場就在這裡。', why:'東北季風吹過台灣海峽,風力很強。'},
+  {n:'澎湖風力', t:'wind', lon:119.58, lat:23.60, where:'澎湖縣', d:'澎湖冬天風很大,很早就開始用風力發電。', why:'島上地勢平坦,季風強勁。'},
+  {n:'中南部太陽光電', t:'solar', lon:120.20, lat:23.25, where:'台南、嘉義等沿海地區', d:'中南部陽光充足,有許多大型地面型和魚塭、鹽灘地上的太陽光電場。', why:'南部晴天多、日照時間長,太陽光電發得比較多。'},
+  {n:'清水地熱電廠', t:'geo', lon:121.62, lat:24.62, where:'宜蘭縣大同鄉', d:'台灣代表性的地熱發電廠,利用地底的熱水和蒸氣發電。', why:'宜蘭地底的溫度很高,有豐富的溫泉和地熱。'},
+];
+const COAST = [[121.51,25.30],[121.58,25.29],[121.66,25.21],[121.75,25.14],[121.85,25.11],[121.93,25.05],[122.00,25.01],[121.92,24.95],[121.84,24.84],[121.82,24.72],[121.85,24.60],[121.82,24.45],[121.72,24.25],[121.64,24.08],[121.60,23.95],[121.55,23.75],[121.50,23.50],[121.43,23.30],[121.36,23.10],[121.25,22.90],[121.15,22.75],[121.02,22.58],[120.92,22.38],[120.88,22.20],[120.86,22.02],[120.84,21.90],[120.74,21.94],[120.70,22.04],[120.68,22.15],[120.62,22.30],[120.53,22.40],[120.42,22.50],[120.30,22.58],[120.25,22.70],[120.18,22.86],[120.10,23.00],[120.06,23.12],[120.10,23.30],[120.14,23.45],[120.15,23.60],[120.20,23.78],[120.30,23.92],[120.38,24.05],[120.46,24.18],[120.55,24.33],[120.65,24.48],[120.75,24.60],[120.85,24.72],[120.92,24.85],[121.02,24.98],[121.12,25.05],[121.25,25.11],[121.38,25.16],[121.43,25.22]];
+const PENGHU = [[119.52,23.68],[119.60,23.70],[119.68,23.62],[119.66,23.52],[119.58,23.50],[119.54,23.56]];
+const px = ([lon,lat]) => [((lon-119.3)*137.6).toFixed(1), ((25.45-lat)*150).toFixed(1)];
+function smooth(pts){
+  // Catmull-Rom closed path
+  const P = pts.map(px).map(p=>p.map(Number)); const n = P.length;
+  let d = `M${P[0][0]},${P[0][1]}`;
+  for(let i=0;i<n;i++){
+    const p0=P[(i-1+n)%n], p1=P[i], p2=P[(i+1)%n], p3=P[(i+2)%n];
+    const c1=[p1[0]+(p2[0]-p0[0])/6, p1[1]+(p2[1]-p0[1])/6], c2=[p2[0]-(p3[0]-p1[0])/6, p2[1]-(p3[1]-p1[1])/6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return d + 'Z';
+}
+let mapOff = new Set(), curPlant = null;
+function renderMap(){
+  const svg = $('#twmap');
+  const mount = [[121.2,24.6],[121.35,24.2],[121.2,23.6],[121.0,23.1],[120.85,22.6]].map(px);
+  svg.innerHTML = `
+    <rect width="400" height="560" fill="#DCEFFB" rx="16"/>
+    <g opacity=".5" stroke="#B7DAF0" stroke-width="1" fill="none">${[80,180,280,380,480].map(y=>`<path d="M0 ${y} q100 -10 200 0 t200 0"/>`).join('')}</g>
+    <text x="30" y="250" font-size="15" fill="#5B8FB8" transform="rotate(-70 30 250)">台 灣 海 峽</text>
+    <text x="365" y="430" font-size="15" fill="#5B8FB8" transform="rotate(-70 365 430)">太 平 洋</text>
+    <path d="${smooth(COAST)}" fill="#F6EFD9" stroke="#C9B98F" stroke-width="2"/>
+    <path d="M${mount.map(p=>p.join(',')).join(' L')}" stroke="#C9D8A8" stroke-width="26" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+    <text x="${px([121.05,23.55])[0]}" y="${px([121.05,23.55])[1]}" font-size="12" fill="#7E8F5A" text-anchor="middle">中央山脈</text>
+    <path d="${smooth(PENGHU)}" fill="#F6EFD9" stroke="#C9B98F" stroke-width="2"/>
+    <text x="${px([119.6,23.38])[0]}" y="${px([119.6,23.38])[1]}" font-size="12" fill="#8A7A55" text-anchor="middle">澎湖</text>
+    ${[['臺北',121.52,25.04],['臺中',120.68,24.15],['臺南',120.21,22.99],['高雄',120.31,22.63],['花蓮',121.6,23.98],['臺東',121.14,22.76]].map(([n,lo,la])=>{const [x,y]=px([lo,la]);return `<circle cx="${x}" cy="${y}" r="3" fill="#8A7A55"/><text x="${+x+6}" y="${+y+4}" font-size="12" fill="#8A7A55">${n}</text>`;}).join('')}
+    <g transform="translate(40 40)"><path d="M0 -18 L7 6 L0 0 L-7 6Z" fill="#2A2833"/><text x="0" y="22" text-anchor="middle" font-size="13">北</text></g>
+    ${PLANTS.map((p,i)=>{ if(mapOff.has(p.t)) return ''; const [x,y]=px([p.lon,p.lat]); const ty=TYPES[p.t];
+      return `<g class="mk ${curPlant===i?'on':''}" data-p="${i}" tabindex="0" role="button" aria-label="${p.n}">
+        <circle class="bg" cx="${x}" cy="${y}" r="14" fill="#fff" stroke="${ty.c}" stroke-width="4"/>
+        <text x="${x}" y="${+y+6}" text-anchor="middle" font-size="16">${ty.e}</text></g>`; }).join('')}`;
+}
+function showPlant(i){
+  curPlant = i; const p = PLANTS[i], ty = TYPES[p.t];
+  $('#plantInfo').innerHTML = `<div style="font-size:44px">${ty.e}</div>
+    <span class="pill" style="background:${ty.c};color:#fff">${ty.n}</span>
+    <h3 style="margin-top:8px">${p.n}</h3><p class="note">📍 ${p.where}</p><p>${p.d}</p>
+    <div class="think"><b>為什麼蓋在這裡?</b>${p.why}</div>`;
+  renderMap();
+  if(window.innerWidth < 860) $('#plantInfo').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('#twmap').addEventListener('click', e => { const g = e.target.closest('[data-p]'); if(g) showPlant(+g.dataset.p); });
+$('#twmap').addEventListener('keydown', e => { const g = e.target.closest('[data-p]'); if(g && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); showPlant(+g.dataset.p); }});
+$('#filters').innerHTML = Object.entries(TYPES).map(([k,t]) => `<button data-f="${k}" aria-pressed="true"><span class="dot" style="background:${t.c}"></span>${t.e} ${t.n}</button>`).join('');
+$('#filters').addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if(!b) return; const k = b.dataset.f;
+  mapOff.has(k) ? mapOff.delete(k) : mapOff.add(k);
+  b.classList.toggle('off', mapOff.has(k)); b.setAttribute('aria-pressed', !mapOff.has(k)); renderMap();
+});
+renderMap();
+
+/* waffle: 2025 approximate shares (Taipower system net generation + purchases) */
+const MIX = [
+  {k:'gas', n:'🔥 燃氣(天然氣)', v:53, c:'#4A78D0', msg:'燃氣是台灣<b>最主要</b>的發電方式,超過一半的電都靠它。'},
+  {k:'coal', n:'🪨 燃煤', v:27, c:'#56535F', msg:'燃煤大約占 4 分之 1 多。燒煤排碳最多,所以政府計畫逐年減少。'},
+  {k:'solar', n:'☀️ 太陽光電', v:5, c:'#F2B300', msg:'太陽光電大約 5 格。晚上和陰天不能發電,所以裝了很多,發的電還是比火力少。'},
+  {k:'wind', n:'🌬️ 風力', v:4, c:'#22AFC0', msg:'風力大約 4 格,大多來自海上的離岸風機,冬天東北季風吹時發得最多。'},
+  {k:'hydro', n:'💧 水力', v:2, c:'#2F6FB5', msg:'一般水力大約 2 格,下雨多的年份會多一些。'},
+  {k:'otherre', n:'♻️ 其他再生能源', v:2, c:'#7CB342', msg:'包括燒垃圾、沼氣、生質能、地熱等,大約 2 格。'},
+  {k:'nuke', n:'⚛️ 核能', v:1, c:'#9156B8', msg:'2025 年 5 月以後核電停機,所以全年只有大約 1 格。'},
+  {k:'other', n:'🏭 其他', v:6, c:'#C9B79C', msg:'包括工廠的汽電共生、燃油發電和抽蓄水力等。'},
+];
+let mixSel = null;
+function renderWaffle(){
+  const cells = []; MIX.forEach((m,mi) => { for(let i=0;i<m.v;i++) cells.push(mi); });
+  $('#waffle').innerHTML = cells.map(mi => `<i style="background:${MIX[mi].c}" class="${mixSel!==null && mixSel!==mi ? 'dim':''}"></i>`).join('');
+  $('#legend').innerHTML = MIX.map((m,i) => `<button class="${mixSel===i?'on':''}" data-mix="${i}"><span class="sw" style="background:${m.c}"></span>${m.n}<span class="pct">${m.v}</span></button>`).join('')
+    + `<div class="note" style="padding:4px 8px">再生能源合計:約 <b>13</b> 格<br>火力(燃氣+燃煤等):約 <b>81</b> 格</div>`;
+}
+$('#legend').addEventListener('click', e => {
+  const b = e.target.closest('[data-mix]'); if(!b) return; const i = +b.dataset.mix;
+  mixSel = mixSel === i ? null : i; renderWaffle();
+  $('#mixMsg').innerHTML = mixSel === null ? '<b>你發現了嗎?</b>台灣大約有 8 成的電,是靠燒天然氣和煤炭的<b>火力發電</b>做出來的。' : `<b>${MIX[i].n}:約 ${MIX[i].v} 格</b><br>${MIX[i].msg}`;
+});
+renderWaffle();
+
+/* ---------------- SAVE: greenhouse ---------------- */
+function setCO2(v){
+  v = +v; const k = v/100;
+  $('#co2Val').textContent = v < 30 ? '少' : v < 65 ? '多' : '非常多';
+  $('#blanket').setAttribute('r', (78 + k*40).toFixed(0));
+  $('#blanket').setAttribute('opacity', (0.15 + k*0.7).toFixed(2));
+  $('#mercury').setAttribute('y', (110 - k*100).toFixed(0));
+  $('#mercury').setAttribute('height', (40 + k*100).toFixed(0));
+  $('#face').textContent = v < 30 ? '😊' : v < 65 ? '😓' : '🥵';
+  $('#globe').setAttribute('fill', v < 65 ? '#3E86D6' : '#5C7FB8');
+  $('#co2Msg').innerHTML = v < 30 ? '<b>地球狀況:</b>棉被厚度剛剛好,溫度很舒服 😊'
+    : v < 65 ? '<b>地球狀況:</b>棉被變厚,地球開始發燒了 😓 夏天更熱、冰山融化。'
+    : '<b>地球狀況:</b>棉被太厚了!🥵 可能出現更多極端天氣:超強颱風、大乾旱、暴雨,海平面也會上升。<br><b>怎麼辦?</b>少用一點能源、多用再生能源,就能讓棉被變薄!';
+}
+$('#co2').addEventListener('input', e => setCO2(e.target.value));
+setCO2(15);
+
+/* ---------------- SAVE: appliances ---------------- */
+const APPL = [
+  ['❄️','冷氣','開 20 度,很冷又很耗電','設定 26~28 度,再搭配電風扇','台電建議冷氣設定在 26~28 度並搭配電風扇,冷氣溫度每調高 1 度,大約可以省下 6% 的冷氣用電。'],
+  ['💡','沒人的房間','燈一直亮著','離開房間隨手關燈','沒有人在的地方就關燈,是最簡單的節能方法。也可以多利用白天的自然光。'],
+  ['📺','電視和遊戲機','關了但插頭一直插著','不用時拔插頭或關掉延長線開關','很多電器關機後還在偷偷用電,這叫做「待機電力」。拔掉插頭或用有開關的延長線,就能省下這些電。'],
+  ['🧊','冰箱','塞得滿滿的,門開著想要吃什麼','東西放八分滿,想好再開、快開快關','冰箱塞太滿冷空氣不好流動;門開太久冷氣跑掉,冰箱就要花更多電再降溫。'],
+  ['🔆','電燈泡','用舊式的燈泡','換成 LED 燈','LED 燈用比較少的電就能一樣亮,而且比較不會發熱、壽命更長。'],
+  ['🛒','買新電器','只看價格','選有「節能標章」或能源效率 1 級的產品','買電器時看看能源效率標示,1 級最省電。節能標章代表這個產品比一般產品更省電。'],
+  ['🚗','上學','每天都要家人開車接送','走路、騎腳踏車或搭公車','汽車燒汽油會排放二氧化碳。走路和騎車不用燃料,還能運動;大眾運輸一次載很多人,平均每人排的碳比較少。'],
+  ['🥤','喝飲料','每天買瓶裝水','自己帶水壺','製造和運送寶特瓶都要用能源。自備水壺、購物袋、餐具,就能減少垃圾也減少碳排放。'],
+  ['🍱','吃午餐','吃不完就倒掉','吃多少拿多少,多吃在地當季食物','種植、運送、煮熟食物都要用能源。浪費食物等於浪費能源;在地當季的食物運送距離短,碳排放也比較少。'],
+  ['🪟','熱天的房間','開著冷氣卻開著窗戶','開冷氣時關好門窗、拉上窗簾','門窗沒關好,冷空氣會跑出去。拉上窗簾擋住太陽的熱,冷氣就不用那麼辛苦。'],
+];
+let fixed = new Set();
+function renderAppl(){
+  $('#appl').innerHTML = APPL.map((a,i) => `<button class="ap ${fixed.has(i)?'fixed':''}" data-a="${i}">
+    <span class="badge">${fixed.has(i)?'✅':'⚠️'}</span>
+    <div class="e">${a[0]}</div><b>${a[1]}</b>
+    <div class="st">${fixed.has(i) ? '好習慣:'+a[3] : '壞習慣:'+a[2]}</div></button>`).join('');
+  $('#ebar').style.width = (fixed.size/APPL.length*100)+'%';
+  $('#ecount').textContent = `${fixed.size}/${APPL.length}`;
+}
+$('#appl').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if(!b) return; const i = +b.dataset.a;
+  fixed.add(i); renderAppl();
+  const a = APPL[i];
+  $('#tip').innerHTML = `<b>💡 ${a[0]} ${a[1]}:${a[3]}</b><p style="margin:.4em 0 0">${a[4]}</p>` +
+    (fixed.size === APPL.length ? '<p style="color:var(--leaf);font-weight:700;margin-top:8px">🎉 太棒了!10 個壞習慣全部改好,地球給你一個大大的讚!</p>' : '');
+});
+renderAppl();
+
+/* ---------------- SAVE: pledges + tree ---------------- */
+const PLEDGES = ['離開房間時隨手關燈、關電扇','不用的電器拔掉插頭','開冷氣時設定 26~28 度並關好門窗','能走路或騎腳踏車就不坐車','自備水壺和環保餐具','吃多少拿多少,不浪費食物','提醒家人買電器時選擇節能標章','多利用白天的自然光讀書'];
+const LEAF_POS = [[150,120],[115,140],[185,135],[95,175],[205,165],[135,95],[170,90],[150,150]];
+let pledged = new Set(store.get('energy-pledges', []));
+function renderPledges(){
+  $('#pledges').innerHTML = PLEDGES.map((p,i) => `<label><input type="checkbox" data-pl="${i}" ${pledged.has(i)?'checked':''}> ${p}</label>`).join('');
+  $('#leaves').innerHTML = LEAF_POS.map(([x,y],i) => `<g class="leafdot" style="opacity:${pledged.has(i)?1:0};transform:scale(${pledged.has(i)?1:.3})">
+    <circle cx="${x}" cy="${y}" r="${30 - i%3*3}" fill="${['#5DB36E','#2E9E66','#7CC59A'][i%3]}"/></g>`).join('')
+    + (pledged.size >= 6 ? `<text x="150" y="70" text-anchor="middle" font-size="30">🍎</text>` : '');
+  const n = pledged.size;
+  $('#treeTitle').textContent = n === 0 ? '小樹苗等著你' : n < 4 ? '小樹長葉子了!' : n < 8 ? '小樹長得好茂盛!' : '🌳 大樹完成!節能減碳小達人!';
+  $('#treeMsg').textContent = n === 0 ? '勾選左邊的承諾,讓它長大吧!' : `你許下了 ${n} 個承諾。說到做到,才能真的幫地球減碳喔!`;
+}
+$('#pledges').addEventListener('change', e => {
+  const i = +e.target.dataset.pl; e.target.checked ? pledged.add(i) : pledged.delete(i);
+  store.set('energy-pledges', [...pledged]); renderPledges();
+});
+renderPledges();
+
+/* ---------------- QUIZ ---------------- */
+const QUIZ = [
+  {q:'地球上最主要的能量來源是什麼?', o:['月亮','太陽','電池','地底的石油'], a:1, ex:'太陽送來光能和熱能,植物、風、雨水,甚至化石燃料的能量,追根究柢都來自太陽。'},
+  {q:'太陽能板(太陽光電板)把哪一種能量變成電能?', o:['聲能','動能','光能','化學能'], a:2, ex:'太陽光電板直接把「光能」變成「電能」,而且不需要轉動發電機。'},
+  {q:'電風扇通電後會轉動,這是把電能變成什麼能?', o:['動能','光能','化學能','聲能'], a:0, ex:'電風扇的馬達把電能變成扇葉轉動的「動能」。'},
+  {q:'火力、水力、風力、核能發電有一個共同點,是什麼?', o:['都要燒煤','都會讓發電機轉動','都只能在晚上發電','都用太陽能板'], a:1, ex:'它們都是想辦法讓渦輪和發電機轉起來;只有太陽光電不用轉動。'},
+  {q:'下面哪一種是「再生能源」?', o:['天然氣','煤炭','風力','石油'], a:2, ex:'風是大自然會一直產生的,用不完,所以是再生能源。煤、石油、天然氣是化石燃料,用掉就很難再有。'},
+  {q:'2025 年,台灣最多的電是用哪一種方式發的?', o:['燃氣(天然氣)火力','太陽光電','核能','水力'], a:0, ex:'2025 年台灣大約一半以上的電來自燃氣發電,加上燃煤,火力發電大約占 8 成。'},
+  {q:'為什麼大型火力發電廠大多蓋在海邊?', o:['海邊風景比較好','燃料要用船運來,也需要海水冷卻','海邊比較涼快,工作人員比較舒服','因為海水可以燒'], a:1, ex:'台灣的煤和天然氣幾乎都靠船從國外運來;發電時也要用大量海水冷卻機器。'},
+  {q:'太陽光電在什麼時候「不能」發電?', o:['中午','夏天','晚上','晴天'], a:2, ex:'沒有陽光就不能發電,所以晚上要靠其他發電方式,或是先把電存起來。'},
+  {q:'冷氣溫度建議設定在幾度比較節能?', o:['18~20 度','22~24 度','26~28 度','30~32 度'], a:2, ex:'台電建議設定 26~28 度並搭配電風扇,每調高 1 度大約可以省 6% 的冷氣用電。'},
+  {q:'下面哪一個做法「不能」幫助節能減碳?', o:['離開房間隨手關燈','把冰箱塞得滿滿的','自備水壺','走路上學'], a:1, ex:'冰箱塞太滿,冷空氣不好流動,反而更耗電。建議只放八分滿。'},
+];
+let qi = 0, score = 0, answered = false, order = [];
+function startQuiz(){ qi = 0; score = 0; order = QUIZ.map((_,i)=>i); renderQ(); }
+function renderQ(){
+  const box = $('#quizBox');
+  if(qi >= QUIZ.length){
+    const badge = score >= 9 ? ['🏆','能源小博士'] : score >= 7 ? ['🥇','能源小達人'] : score >= 5 ? ['🥈','能源見習生'] : ['🌱','能源新手'];
+    box.innerHTML = `<div style="text-align:center"><div style="font-size:80px">${badge[0]}</div><h2>你答對了 ${score} / ${QUIZ.length} 題</h2>
+      <p class="lead" style="margin:0 auto">獲得稱號:<b>${badge[1]}</b></p>
+      <p>${score >= 9 ? '太厲害了!你已經完全了解能源的知識!' : '回到前面的任務再探索一下,再來挑戰一次吧!'}</p>
+      <button class="big-btn green" id="qAgain">🔁 再挑戰一次</button></div>`;
+    $('#qAgain').addEventListener('click', startQuiz);
+    return;
+  }
+  const Q = QUIZ[order[qi]]; answered = false;
+  box.innerHTML = `<div class="qbar"><i style="width:${qi/QUIZ.length*100}%"></i></div>
+    <div class="note">第 ${qi+1} 題 / 共 ${QUIZ.length} 題 ・ 目前答對 ${score} 題</div>
+    <h3 style="margin-top:8px">${Q.q}</h3>
+    ${Q.o.map((o,i)=>`<button class="qopt" data-o="${i}">${'ABCD'[i]}. ${o}</button>`).join('')}
+    <div class="fb" id="fb"></div>
+    <div style="text-align:right;margin-top:12px"><button class="big-btn" id="qNext" style="display:none">下一題 →</button></div>`;
+  $$('.qopt', box).forEach(b => b.addEventListener('click', () => {
+    if(answered) return; answered = true;
+    const pick = +b.dataset.o, ok = pick === Q.a; if(ok) score++;
+    $$('.qopt', box).forEach((x,i) => { if(i===Q.a) x.classList.add('right'); else if(i===pick) x.classList.add('wrong'); });
+    const fb = $('#fb'); fb.classList.add('on');
+    fb.style.background = ok ? 'var(--leaf-l)' : '#FFF1D2';
+    fb.innerHTML = `<b>${ok ? '✅ 答對了!' : '💡 差一點!'}</b> ${Q.ex}`;
+    const nx = $('#qNext'); nx.style.display = 'inline-block'; nx.textContent = qi === QUIZ.length-1 ? '看成績 🏁' : '下一題 →';
+    nx.addEventListener('click', () => { qi++; renderQ(); });
+  }));
+}
+startQuiz();
+
+/* start */
+show(location.hash.slice(1) || 'home');
+</script>
+</body>
+</html>
