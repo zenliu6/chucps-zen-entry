@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>太陽系大冒險｜3D 行星探索</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050816; --panel:rgba(14,20,48,.84); --panel2:rgba(255,255,255,.06);
+    --line:rgba(140,170,255,.22); --text:#eef2ff; --muted:#a9b4d6;
+    --yellow:#ffd166; --cyan:#4cc9f0; --pink:#ff7aa2; --green:#7ee081; --purple:#b69cff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;}
+  button{font-family:inherit;cursor:pointer}
+  #scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #labels,#clabels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .lbl{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
+    background:rgba(10,16,40,.72);border:1px solid var(--line);color:#fff;border-radius:999px;
+    padding:3px 10px;font-size:14px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.25;
+    backdrop-filter:blur(4px);transition:background .2s}
+  .lbl small{display:block;font-weight:400;font-size:11px;color:var(--yellow)}
+  .lbl:hover,.lbl.sel{background:var(--yellow);color:#1b1b2f}
+  .lbl.sel small,.lbl:hover small{color:#5a3d00}
+  .lbl.hit{animation:hit 1.2s ease-out}
+  @keyframes hit{0%{background:#fff;color:#000;transform:translate(-50%,-100%) scale(1.5)}100%{transform:translate(-50%,-100%) scale(1)}}
+  .clbl{cursor:default;background:rgba(20,14,50,.72);border-color:rgba(182,156,255,.4)}
+  .clbl:hover{background:rgba(20,14,50,.72);color:#fff} .clbl:hover small{color:var(--yellow)}
+  body.mode-cosmos #labels,body:not(.mode-cosmos) #clabels{display:none}
+
+  /* top bar */
+  #top{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none;flex-wrap:wrap;z-index:6}
+  .brand{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);
+    border-radius:18px;padding:8px 16px 8px 10px;pointer-events:auto;backdrop-filter:blur(8px)}
+  .brand .logo{font-size:32px}
+  .brand h1{margin:0;font-size:22px;font-weight:900;letter-spacing:1px;
+    background:linear-gradient(90deg,var(--yellow),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand p{margin:0;font-size:13px;color:var(--muted)}
+  nav{display:flex;gap:8px;flex-wrap:wrap;pointer-events:auto;justify-content:flex-end}
+  nav button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;
+    padding:10px 14px;font-size:15px;font-weight:700;backdrop-filter:blur(8px);transition:.2s}
+  nav button:hover{border-color:var(--cyan);transform:translateY(-1px)}
+  nav button.active{background:var(--cyan);color:#06142b;border-color:var(--cyan)}
+
+  /* controls */
+  #controls{position:fixed;left:12px;bottom:84px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 12px;backdrop-filter:blur(8px);font-size:14px}
+  .sbtn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:14px;font-weight:700}
+  .sbtn.on{background:rgba(76,201,240,.25);border-color:var(--cyan)}
+  .sbtn.go{background:var(--yellow);color:#1b1b2f;border-color:var(--yellow)}
+  #controls input[type=range]{width:110px;accent-color:var(--yellow)}
+  #speedVal{min-width:36px;color:var(--yellow);font-weight:700}
+
+  /* chips */
+  #chips{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:8px;overflow-x:auto;padding:6px;
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(8px);scrollbar-width:thin}
+  .chip{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid transparent;
+    color:var(--text);border-radius:12px;padding:8px 14px;font-size:16px;font-weight:700;transition:.2s}
+  .chip i{width:16px;height:16px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+  .chip:hover{border-color:var(--line)}
+  .chip.sel{border-color:var(--yellow);background:rgba(255,209,102,.18)}
+  body.mode-cosmos #controls,body.mode-cosmos #chips,body.mode-cosmos #scaleNote,body.mode-cosmos #panel{display:none}
+
+  /* left stack: real-scale bar + light HUD */
+  #leftStack{position:fixed;left:12px;top:96px;width:330px;max-width:calc(100% - 24px);display:none;flex-direction:column;gap:8px;z-index:4}
+  body.mode-real #leftStack{display:flex}
+  .box2{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px 12px;backdrop-filter:blur(8px)}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;background:var(--panel2);color:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 6px;font-size:15px;font-weight:900}
+  .seg button.on{background:var(--yellow);color:#1b1b2f;border-color:var(--yellow)}
+  .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:13.5px;color:var(--muted)}
+  .row .sbtn{padding:5px 9px;font-size:13px}
+  #distOnly{display:none} body.real-dist #distOnly{display:block}
+  #realNote{font-size:14px;line-height:1.65;margin-top:8px}
+  #lightHud{display:none}
+  #lightHud.show{display:block}
+  #lightHud h4{margin:0 0 4px;font-size:16px;color:var(--yellow)}
+  .lhBig{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums}
+  .lhSub{font-size:13px;color:var(--muted)}
+  #lhList{list-style:none;padding:0;margin:8px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:13.5px}
+  #lhList li{display:flex;justify-content:space-between;gap:6px;padding:3px 6px;border-radius:8px;background:var(--panel2);color:var(--muted)}
+  #lhList li.done{color:#fff;background:rgba(255,209,102,.18)}
+  #lhMsg{font-size:14px;line-height:1.6;margin-top:8px;color:#fff}
+
+  /* info panel */
+  #panel{position:fixed;top:12px;right:12px;bottom:84px;width:400px;max-width:calc(100% - 24px);
+    background:var(--panel);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(12px);
+    transform:translateX(calc(100% + 24px));transition:transform .45s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;z-index:7}
+  #panel.open{transform:none}
+  .close{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+    background:var(--panel2);color:#fff;font-size:22px;line-height:1;z-index:2}
+  #panelBody{overflow-y:auto;padding:20px 20px 24px;flex:1}
+  .ph{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .ph-dot{width:58px;height:58px;border-radius:50%;flex:0 0 auto;
+    background:radial-gradient(circle at 35% 35%,#fff8,var(--c) 45%,#000a 100%);box-shadow:0 0 24px var(--c)}
+  .ph h2{margin:0;font-size:30px;font-weight:900}
+  .ph h2 small{font-size:15px;color:var(--muted);font-weight:400;margin-left:4px}
+  .tag{display:inline-block;margin-top:4px;background:rgba(255,209,102,.16);color:var(--yellow);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+  .order{font-size:13px;color:var(--muted);margin-left:6px}
+  .intro{font-size:17px;line-height:1.7;margin:12px 0 16px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .stat .k{font-size:13px;color:var(--muted)}
+  .stat .v{font-size:19px;font-weight:900;margin:2px 0;color:#fff}
+  .stat .n{font-size:12.5px;color:#c9d3f2;line-height:1.5}
+  .state{margin:14px 0;background:rgba(76,201,240,.1);border:1px solid rgba(76,201,240,.35);border-radius:14px;padding:12px 14px;font-size:15.5px;line-height:1.7}
+  .calc{background:rgba(255,122,162,.08);border:1px solid rgba(255,122,162,.35);border-radius:14px;padding:12px 14px;margin:14px 0}
+  .calc h3,.sec{margin:0 0 8px;font-size:18px}
+  .calc label{display:flex;align-items:center;gap:8px;font-size:15px;margin:8px 0 2px}
+  .calc input{width:76px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:#0b1030;color:#fff;font-size:16px;font-weight:700;font-family:inherit}
+  .res{font-size:15.5px;color:var(--yellow);line-height:1.6}
+  .res b{font-size:20px}
+  .facts{padding-left:0;list-style:none;margin:0}
+  .facts li{position:relative;padding:10px 12px 10px 40px;margin-bottom:8px;background:var(--panel2);border-radius:12px;font-size:15.5px;line-height:1.65}
+  .facts li::before{content:"⭐";position:absolute;left:12px;top:10px}
+  .drive{font-size:15px;line-height:1.7;color:#d6defa;background:var(--panel2);border-radius:12px;padding:10px 12px;margin-top:12px}
+
+  /* notes */
+  #hint{position:fixed;left:50%;top:96px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:10px 16px;font-size:15px;max-width:min(560px,92vw);text-align:center;transition:opacity .6s;pointer-events:none}
+  #scaleNote{position:fixed;right:12px;bottom:84px;font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:6px 10px;max-width:290px;line-height:1.5}
+  #scaleNote a{color:var(--cyan);cursor:pointer;text-decoration:underline}
+  body.mode-real #scaleNote{display:none}
+  .linkbtn{background:none;border:none;color:var(--cyan);text-decoration:underline;font-size:12.5px;padding:0}
+
+  /* cosmos UI */
+  #cosmosUI{display:none}
+  body.mode-cosmos #cosmosUI{display:block}
+  #cCard{position:fixed;left:12px;top:96px;bottom:96px;width:390px;max-width:calc(100% - 24px);overflow-y:auto;
+    background:var(--panel);border:1px solid rgba(182,156,255,.35);border-radius:22px;padding:18px 18px 20px;backdrop-filter:blur(10px);z-index:4}
+  #cCard .em{font-size:40px;line-height:1}
+  #cCard h2{margin:6px 0 2px;font-size:28px;font-weight:900}
+  #cCard .kind{color:var(--purple);font-size:14px;font-weight:700}
+  .badge{display:inline-block;margin:10px 0 4px;padding:5px 12px;border-radius:999px;font-size:14px;font-weight:700;background:rgba(126,224,129,.15);color:var(--green);border:1px solid rgba(126,224,129,.4)}
+  .badge.tele{background:rgba(182,156,255,.15);color:var(--purple);border-color:rgba(182,156,255,.45)}
+  .badge.unk{background:rgba(255,255,255,.08);color:#dfe5ff;border-color:var(--line)}
+  .cstats{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 12px}
+  .cstat{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border-radius:12px;padding:8px 12px;font-size:15px;line-height:1.5}
+  .cstat b{color:#fff} .cstat span{color:var(--muted);font-size:13px;display:block}
+  .ratio{font-size:14px;color:var(--yellow);background:rgba(255,209,102,.1);border:1px dashed rgba(255,209,102,.45);border-radius:12px;padding:8px 12px;margin-bottom:12px}
+  #cLine{position:fixed;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid rgba(182,156,255,.35);
+    border-radius:18px;padding:8px;backdrop-filter:blur(8px);z-index:4}
+  #cStops{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}
+  .stop{flex:1 0 auto;background:var(--panel2);border:1px solid transparent;color:#fff;border-radius:12px;padding:7px 10px;font-size:14px;font-weight:700;white-space:nowrap}
+  .stop.on{border-color:var(--purple);background:rgba(182,156,255,.22)}
+  .stop.past{color:var(--muted)}
+  #cLine .sbtn{font-size:16px;padding:8px 12px}
+  #warp{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .45s;z-index:3;
+    background:radial-gradient(circle,rgba(255,255,255,.0) 0%,rgba(120,100,255,.25) 40%,#03040c 85%)}
+  #warp.on{opacity:1}
+  #zoomTag{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-size:30px;font-weight:900;color:#fff;text-shadow:0 0 18px #7c5cff;opacity:0;transition:opacity .35s;pointer-events:none;z-index:5;text-align:center}
+  #zoomTag.on{opacity:1}
+
+  /* modals */
+  .modal{position:fixed;inset:0;background:rgba(3,6,20,.72);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+  .modal.open{display:flex}
+  .box{background:#0e1533;border:1px solid var(--line);border-radius:24px;width:min(780px,100%);max-height:92vh;overflow-y:auto;padding:24px;position:relative}
+  .box h2{margin:0 0 6px;font-size:26px}
+  .box .x{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:#fff;font-size:22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:14px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .card .em{font-size:34px}
+  .card h4{margin:6px 0 4px;font-size:17px;color:var(--yellow)}
+  .card p{margin:0;font-size:15px;line-height:1.65}
+  .card .big{font-size:20px;font-weight:900;color:#fff;margin:2px 0 4px}
+  .qprog{display:flex;gap:6px;margin:10px 0 16px}
+  .qprog span{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.12)}
+  .qprog span.ok{background:var(--green)} .qprog span.no{background:var(--pink)} .qprog span.cur{background:var(--yellow)}
+  .qtext{font-size:22px;font-weight:900;line-height:1.5;margin-bottom:14px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opts button{background:var(--panel2);border:2px solid var(--line);color:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:700;text-align:left}
+  .opts button:hover:not(:disabled){border-color:var(--cyan)}
+  .opts button.right{background:rgba(126,224,129,.2);border-color:var(--green)}
+  .opts button.wrong{background:rgba(255,122,162,.2);border-color:var(--pink)}
+  .explain{margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(76,201,240,.1);border:1px solid rgba(76,201,240,.35);font-size:16px;line-height:1.7;display:none}
+  .qnav{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .bigbtn{background:var(--yellow);color:#1b1b2f;border:none;border-radius:14px;padding:12px 20px;font-size:17px;font-weight:900}
+  .bigbtn.alt{background:var(--panel2);color:#fff;border:1px solid var(--line)}
+  .result{text-align:center;padding:10px 0}
+  .result .stars{font-size:48px;letter-spacing:6px}
+  .result .score{font-size:24px;font-weight:900;margin:8px 0}
+  .src li{margin-bottom:8px;line-height:1.6;font-size:15px}
+  .src a{color:var(--cyan)}
+
+  @media (max-width:760px){
+    .brand h1{font-size:18px} .brand p{display:none} .brand .logo{font-size:26px}
+    nav button{padding:7px 9px;font-size:13px}
+    #panel{top:auto;left:8px;right:8px;width:auto;max-width:none;bottom:8px;height:62vh;transform:translateY(calc(100% + 20px))}
+    #controls{bottom:78px;font-size:13px;padding:6px 8px;gap:6px}
+    #controls input[type=range]{width:80px}
+    #scaleNote{display:none}
+    .opts{grid-template-columns:1fr}
+    .qtext{font-size:19px}
+    #hint{top:auto;bottom:140px}
+    #leftStack{top:auto;bottom:130px;width:auto;right:12px}
+    #realNote{display:none}
+    #cCard{top:auto;bottom:76px;height:44vh;left:8px;right:8px;width:auto}
+    #cLine{left:8px;right:8px;bottom:8px}
+  }
+</style>
+</head>
+<body class="mode-explore">
+<canvas id="scene"></canvas>
+<div id="labels"></div>
+<div id="clabels"></div>
+<div id="warp"></div>
+<div id="zoomTag"></div>
+
+<header id="top">
+  <div class="brand"><span class="logo">🚀</span><div><h1>太陽系大冒險</h1><p>點一點行星，認識我們的宇宙鄰居！</p></div></div>
+  <nav>
+    <button class="mode active" data-mode="explore">🪐 太陽系</button>
+    <button class="mode" data-mode="real">📏 真實比例</button>
+    <button class="mode" data-mode="cosmos">🔭 宇宙大旅行</button>
+    <button id="btnQuiz">❓ 小測驗</button>
+    <button id="btnFacts">💡 冷知識</button>
+  </nav>
+</header>
+
+<div id="controls">
+  <button id="btnPlay" class="sbtn on" title="暫停/播放">⏸ 暫停</button>
+  <span>速度</span><input id="speed" type="range" min="0" max="10" step="0.5" value="1"><span id="speedVal">1x</span>
+  <button id="btnOrbit" class="sbtn on">軌道</button>
+  <button id="btnLabel" class="sbtn on">名字</button>
+  <button id="btnHome" class="sbtn">🏠 全景</button>
+</div>
+
+<div id="leftStack">
+  <div class="box2">
+    <div class="seg"><button id="rbSize" class="on">📏 真實大小</button><button id="rbDist">🛣️ 真實距離</button></div>
+    <div id="distOnly">
+      <div class="row">行星放大：<button class="sbtn mag on" data-mag="1">真實（看不見）</button><button class="sbtn mag" data-mag="100">×100</button><button class="sbtn mag" data-mag="1000">×1000</button></div>
+      <div class="row">鏡頭：<button class="sbtn" id="viewAll">🌐 整個太陽系</button><button class="sbtn" id="viewInner">🔍 內行星</button></div>
+      <div class="row"><button class="sbtn go" id="btnLight">☀️ 和陽光賽跑！</button></div>
+    </div>
+    <div id="realNote"></div>
+  </div>
+  <div class="box2" id="lightHud">
+    <h4>☀️ 陽光出發了！</h4>
+    <div class="lhSub">光速每秒 30 萬公里，真實經過的時間：</div>
+    <div class="lhBig" id="lhTime">0 秒</div>
+    <div class="lhSub" id="lhDist">離太陽 0 公里</div>
+    <div class="row">播放速度：<button class="sbtn lm" data-lm="1">真實</button><button class="sbtn lm" data-lm="10">×10</button><button class="sbtn lm on" data-lm="100">×100</button><button class="sbtn lm" data-lm="1000">×1000</button></div>
+    <ul id="lhList"></ul>
+    <div id="lhMsg"></div>
+    <div class="row"><button class="sbtn" id="lhAgain">🔁 再跑一次</button><button class="sbtn" id="lhStop">✖ 關閉</button></div>
+  </div>
+</div>
+
+<div id="scaleNote">提醒：為了讓大家看得清楚，這裡的大小和距離都<b>不是</b>真實比例。想看真實的樣子？點 <a id="goReal">📏 真實比例</a>　·　<button class="linkbtn" id="btnSrc">資料來源</button></div>
+
+<div id="chips"></div>
+
+<aside id="panel"><button class="close" id="closePanel" aria-label="關閉">×</button><div id="panelBody"></div></aside>
+
+<div id="cosmosUI">
+  <div id="cCard"></div>
+  <div id="cLine"><button class="sbtn" id="cPrev" aria-label="上一站">◀</button><div id="cStops"></div><button class="sbtn" id="cNext" aria-label="下一站">▶</button><button class="sbtn go" id="cRecords">🏁 探索極限</button></div>
+</div>
+
+<div id="hint">🖱️ 拖曳可以轉動視角、滾輪（或兩指）可以放大縮小，<b>點一下行星</b>就能看介紹！</div>
+
+<div class="modal" id="quizModal"><div class="box"><button class="x" data-close>×</button><div id="quizBody"></div></div></div>
+<div class="modal" id="factsModal"><div class="box"><button class="x" data-close>×</button>
+  <h2>💡 太空冷知識</h2><p style="color:var(--muted);margin:0">宇宙裡還有好多有趣的事情！</p>
+  <div class="grid" id="factsGrid"></div></div></div>
+<div class="modal" id="recModal"><div class="box"><button class="x" data-close>×</button>
+  <h2>🏁 人類探索宇宙的極限</h2><p style="color:var(--muted);margin:0;line-height:1.7">到 2026 年 11 月為止，人類在宇宙中「去過」和「看過」最遠的地方：</p>
+  <div class="grid" id="recGrid"></div>
+  <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-top:14px">你發現了嗎？人類「親自去過」的地方只有月球附近，機器人飛得比較遠，而用望遠鏡「看」得最遠！未來說不定就是你去打破這些紀錄喔！🚀</p>
+</div></div>
+<div class="modal" id="srcModal"><div class="box"><button class="x" data-close>×</button>
+  <h2>📚 資料來源</h2>
+  <p style="color:var(--muted);line-height:1.7">這個網站的數字主要來自美國太空總署（NASA）的官方資料。科學家一直在發現新東西，像衛星的數量、最遠的星系常常會更新喔！</p>
+  <ul class="src">
+    <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">NASA 行星資料表（Planetary Fact Sheet）</a>：直徑、重力、溫度、與太陽距離、一天與一年的長度、有沒有環。</li>
+    <li><a href="https://science.nasa.gov/solar-system/moons/" target="_blank" rel="noopener">NASA Science：太陽系的衛星</a>：截至 2026 年 10 月，各行星（含冥王星）共有 461 顆正式承認的衛星。</li>
+    <li><a href="https://science.nasa.gov/image-article/apod/apod-2026-august-11-six-moons-of-saturn/" target="_blank" rel="noopener">NASA 每日一天文圖（2026/8/11）</a>：截至 2026 年 6 月，土星 293 顆、木星 115 顆衛星。</li>
+    <li><a href="https://www.jpl.nasa.gov/missions/voyager-1/" target="_blank" rel="noopener">NASA JPL 航海家1號</a>：2026 年 11 月 18 日達到離地球 1 光日（約 259 億公里）。</li>
+    <li><a href="https://www.nasa.gov/mission/artemis-ii/" target="_blank" rel="noopener">NASA Artemis II</a>：2026 年 4 月 6 日，太空人到達離地球約 406,771 公里，打破阿波羅 13 號紀錄。</li>
+    <li><a href="https://www.stsci.edu/contents/news-releases/2026/news-2026-107" target="_blank" rel="noopener">NASA 韋伯太空望遠鏡（STScI，2026/1/28）</a>：目前最遠的星系 MoM-z14，大霹靂後 2.8 億年。</li>
+    <li><a href="https://imagine.gsfc.nasa.gov/features/cosmic/nearest_star_info.html" target="_blank" rel="noopener">NASA Imagine the Universe：最近的恆星</a>、<a href="https://imagine.gsfc.nasa.gov/features/cosmic/nearest_galaxy_info.html" target="_blank" rel="noopener">最近的星系</a>。</li>
+    <li><a href="https://spaceplace.nasa.gov/satellite-galaxies/en/" target="_blank" rel="noopener">NASA Space Place：衛星星系</a>（大麥哲倫雲約 16.3 萬光年）。</li>
+  </ul>
+  <p style="color:var(--muted);font-size:14px;line-height:1.7">註：溫度為整顆行星的平均溫度；木星、土星、天王星、海王星沒有可以站的地面，溫度與重力以「雲頂」附近的高度計算。宇宙大旅行中，太陽系以外的場景是依照科學資料畫的示意圖。</p>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* ===================== 行星資料（NASA Planetary Fact Sheet + NASA 2026 衛星數） ===================== */
+const EARTH_D = 12756, EARTH_G = 9.8;
+const PLANETS = [
+ {key:'mercury',name:'水星',en:'Mercury',color:'#b5b0aa',diameter:4879,gravity:3.7,moons:0,temp:167,dist:57.9,period:88.0,day:4222.6,rot:1407.6,tilt:0.03,rings:false,vr:.55,orbit:13,
+  type:'岩石行星',typeNote:'表面是堅硬的岩石，布滿了隕石撞出來的坑洞，幾乎沒有空氣。',
+  intro:'離太陽最近、也是八大行星中最小的行星，跑得最快，88 天就繞太陽一圈！',
+  moonNote:'水星沒有衛星', tempNote:'白天約 430°C，晚上降到約 -180°C，溫差超大！', ringNote:'沒有環',
+  facts:['水星上的「一天」（從日出到下一次日出）大約是 176 個地球日，比它的「一年」88 天還要長！',
+         '水星幾乎沒有大氣層，沒辦法保溫，所以白天超熱、晚上超冷。',
+         '表面有很多隕石撞出來的坑洞，看起來跟月球很像。',
+         '雖然離太陽最近，但水星<b>不是</b>最熱的行星喔！猜猜看是誰？']},
+ {key:'venus',name:'金星',en:'Venus',color:'#e8c27a',diameter:12104,gravity:8.9,moons:0,temp:464,dist:108.2,period:224.7,day:2802.0,rot:5832.5,tilt:177.4,rings:false,vr:.95,orbit:18,
+  type:'岩石行星',typeNote:'有岩石地面，但被又厚又熱的雲層緊緊包住，雲裡還有硫酸。',
+  intro:'太陽系最熱的行星！大小和地球差不多，常被叫做地球的「雙胞胎」。',
+  moonNote:'金星沒有衛星', tempNote:'比水星還熱！熱到可以把鉛融化', ringNote:'沒有環',
+  facts:['金星是太陽系最熱的行星，因為厚厚的二氧化碳大氣像棉被一樣，把熱都留住了。',
+         '金星自轉的方向跟地球相反，所以在金星上，太陽是從<b>西邊</b>升起的！',
+         '金星自轉一圈要 243 個地球日，比它繞太陽一圈的 225 天還要久。',
+         '金星是夜空中除了月亮以外最亮的星星，傍晚或清晨常常可以看到它。']},
+ {key:'earth',name:'地球',en:'Earth',color:'#4f8fe0',diameter:12756,gravity:9.8,moons:1,temp:15,dist:149.6,period:365.2,day:24.0,rot:23.9,tilt:23.4,rings:false,vr:1.0,orbit:24,
+  type:'岩石行星',typeNote:'有岩石地面、液態的水和可以呼吸的空氣，是我們的家！',
+  intro:'我們住的星球！離太陽不近也不遠，溫度剛剛好，是目前唯一知道有生命的地方。',
+  moonNote:'就是我們熟悉的月球', tempNote:'不冷不熱，剛好適合生物生活', ringNote:'沒有環',
+  facts:['地球是目前唯一知道有生命存在的星球。',
+         '地球表面大約 70% 被海洋覆蓋，從太空看是一顆漂亮的藍色星球。',
+         '大氣層像保護罩，幫我們擋住太陽有害的光線，也讓很多小隕石在落地前就燒光了。',
+         '地球自己轉一圈是「一天」，繞太陽轉一圈是「一年」。']},
+ {key:'mars',name:'火星',en:'Mars',color:'#d0603a',diameter:6792,gravity:3.7,moons:2,temp:-65,dist:228.0,period:687.0,day:24.7,rot:24.6,tilt:25.2,rings:false,vr:.7,orbit:30,
+  type:'岩石行星',typeNote:'乾燥又寒冷的紅色沙漠，有高山、峽谷和兩極的冰帽。',
+  intro:'紅通通的「紅色星球」，一天的長度和地球差不多，是科學家最常派探測車去的行星。',
+  moonNote:'火衛一、火衛二，形狀像馬鈴薯', tempNote:'比冰箱的冷凍庫還要冷很多', ringNote:'沒有環',
+  facts:['火星表面有很多生鏽的鐵（氧化鐵），所以看起來紅紅的。',
+         '火星有太陽系最高的火山「奧林帕斯山」，大約是聖母峰的 2.5 倍高！',
+         '在火星上看夕陽，天空會變成<b>藍色</b>的！',
+         '現在有探測車在火星上工作，幫科學家尋找以前有沒有水和生命的線索。']},
+ {key:'jupiter',name:'木星',en:'Jupiter',color:'#d9a066',diameter:142984,gravity:23.1,moons:115,temp:-110,dist:778.5,period:4331,day:9.9,rot:9.9,tilt:3.1,rings:true,vr:3.0,orbit:47,
+  type:'氣體巨行星',typeNote:'主要由氫和氦等氣體組成，沒有可以站立的地面，太空船會直接沉進去！',
+  intro:'太陽系的「巨人」，是最大的行星，身上有一個比地球還大的超級風暴。',
+  moonNote:'最大的木衛三比水星還大', tempNote:'這是雲頂的溫度，木星沒有地面', ringNote:'有，但很暗很細，幾乎看不到',
+  facts:['木星是最大的行星，大約可以裝進 1300 顆地球！',
+         '木星上的「大紅斑」是一個比地球還大的超級風暴，已經吹了一百多年。',
+         '木星的一天只有大約 10 小時，是自轉最快的行星。',
+         '木星的衛星「木衛三」是太陽系最大的衛星，比水星還大！']},
+ {key:'saturn',name:'土星',en:'Saturn',color:'#e6cf8f',diameter:120536,gravity:9.0,moons:293,temp:-140,dist:1432.0,period:10747,day:10.7,rot:10.7,tilt:26.7,rings:true,vr:2.5,orbit:62,
+  type:'氣體巨行星',typeNote:'和木星一樣主要由氫和氦組成，沒有可以站立的地面。',
+  intro:'戴著美麗光環的行星，也是衛星最多的行星，衛星數量多到快要 300 顆！',
+  moonNote:'衛星最多！最大的是土衛六（泰坦）', tempNote:'這是雲頂的溫度，土星沒有地面', ringNote:'有！太陽系最壯觀的環',
+  facts:['土星的環是由無數冰塊和岩石組成的，小的像沙粒，大的像房子一樣大。',
+         '土星很輕，平均密度比水還小——如果有一個超級大的浴缸，土星可以<b>浮</b>在水面上！',
+         '土星是衛星最多的行星，到 2026 年已經確認有 293 顆。',
+         '土衛六「泰坦」有濃厚的大氣層，表面還有甲烷形成的湖泊。']},
+ {key:'uranus',name:'天王星',en:'Uranus',color:'#8fd9e0',diameter:51118,gravity:8.7,moons:29,temp:-195,dist:2867.0,period:30589,day:17.2,rot:17.2,tilt:97.8,rings:true,vr:1.7,orbit:76,
+  type:'冰巨行星',typeNote:'由水、氨、甲烷等「冰」物質組成，外面包著氫和氦的大氣。',
+  intro:'「躺著」轉的藍綠色星球！它的自轉軸幾乎倒在一邊，像一顆在軌道上滾的球。',
+  moonNote:'大多用莎士比亞故事裡的角色命名', tempNote:'大氣曾測到約 -224°C，是最冷的行星大氣！', ringNote:'有，細細暗暗的 13 個環',
+  facts:['天王星的自轉軸傾斜了大約 98 度，所以它是「躺著」繞太陽轉的！',
+         '因為躺著轉，天王星的南北極會輪流經歷大約 42 年的白天和 42 年的黑夜。',
+         '大氣中的甲烷讓天王星看起來是漂亮的藍綠色。',
+         '2025 年，科學家用韋伯太空望遠鏡發現了它的第 29 顆衛星！']},
+ {key:'neptune',name:'海王星',en:'Neptune',color:'#4a6fe0',diameter:49528,gravity:11.0,moons:16,temp:-200,dist:4515.0,period:59800,day:16.1,rot:16.1,tilt:28.3,rings:true,vr:1.65,orbit:89,
+  type:'冰巨行星',typeNote:'和天王星很像，由「冰」物質組成，外層是又冷又暗的大氣。',
+  intro:'離太陽最遠的行星，深藍色的它颳著太陽系最強的風。',
+  moonNote:'最大的海衛一會「倒著」繞海王星轉', tempNote:'離太陽最遠，非常非常冷', ringNote:'有，但很暗很細',
+  facts:['海王星的風是太陽系最快的，每小時可以超過 2000 公里！',
+         '海王星是先被科學家用數學「算出」位置，才在 1846 年用望遠鏡找到的。',
+         '海王星繞太陽一圈要大約 165 年，從被發現到 2011 年，才剛好繞完第一圈。',
+         '海王星的藍色也是因為大氣中的甲烷。']}
+];
+const SUN = {key:'sun',name:'太陽',en:'Sun',color:'#ffb300',vr:6,
+  intro:'太陽系的中心！太陽是一顆會自己發光發熱的「恆星」，八大行星都繞著它轉。',
+  facts:['太陽的質量佔了整個太陽系的 99.8%，其他所有東西加起來都只是一點點。',
+         '太陽光從太陽跑到地球，大約要 8 分鐘。所以你看到的陽光，是 8 分鐘前出發的！',
+         '千萬不能直接用眼睛或望遠鏡看太陽，會嚴重傷害眼睛！',
+         '太陽其實是一顆中等大小的黃色恆星，宇宙中還有很多比它大得多的星星。']};
+
+const SPACE_FACTS = [
+ ['☀️','太陽超級大','太陽的直徑大約是地球的 109 倍，裡面大約可以裝進 130 萬顆地球！'],
+ ['🌙','月球','月球是地球唯一的天然衛星，總是用同一面對著地球。1969 年，人類第一次登上月球。'],
+ ['👣','腳印留很久','月球上沒有風也沒有雨，太空人留下的腳印可以保存非常非常久。'],
+ ['🔇','太空很安靜','太空幾乎是真空，聲音沒辦法傳遞，所以就算在太空中大喊，別人也聽不到。'],
+ ['🪨','小行星帶','在火星和木星之間，有一大群岩石組成的「小行星帶」。在 3D 畫面中找找看那一圈小點點！'],
+ ['🧊','冥王星','2006 年以前，冥王星被當成第九顆行星，後來被重新分類為「矮行星」。'],
+ ['💡','光年','「光年」不是時間，是距離！光一年可以走大約 9 兆 5 千億公里。'],
+ ['🧑‍🚀','一天 16 次日出','國際太空站大約每 90 分鐘繞地球一圈，所以太空人一天可以看到大約 16 次日出！'],
+ ['⭐','恆星系 vs. 星系','「恆星系」是一顆（或幾顆）恆星和它的行星，像太陽系；「星系」是幾千億顆恆星的超級大家族，像銀河系。'],
+ ['⏳','望遠鏡是時光機','光跑到我們眼睛要時間，所以看越遠的星星，就是看到越久以前的樣子！']
+];
+
+/* ===================== 宇宙大旅行：各站資料 ===================== */
+const STATIONS = [
+ {em:'🌍🌙',name:'地球與月球',short:'月球',kind:'人類親自去過的地方',km:384400,
+  stats:[['📏','距離','約 38.4 萬公里','地球到月球'],['💡','光要跑多久','約 1.3 秒',''],['✈️','搭飛機（時速 900 公里）','','']],
+  badge:['🧑‍🚀 人類親自到過！',''],
+  facts:['畫面中地球和月球的大小、距離是<b>真實比例</b>：地球和月球中間，大約可以排進 30 顆地球。',
+         '1969 年，阿波羅 11 號的太空人第一次在月球上走路。到現在一共有 12 個人在月球上走過。',
+         '2026 年 4 月，Artemis II（阿提米絲 2 號）的 4 位太空人繞過月球背面，飛到離地球約 <b>40 萬 7 千公里</b>的地方，打破 1970 年阿波羅 13 號的紀錄，成為<b>人類親自去過最遠的地方</b>！']},
+ {em:'☀️🪐',name:'整個太陽系',short:'太陽系',kind:'我們的恆星系',km:4.515e9,
+  stats:[['📏','距離','約 45 億公里','太陽到海王星'],['💡','光要跑多久','約 4 小時 11 分',''],['✈️','搭飛機','','']],
+  badge:['🤖 機器人探測器到過',''],
+  facts:['這裡的行星軌道是<b>真實距離比例</b>。你會發現行星之間空空蕩蕩，太空真的非常空曠！',
+         '人類的探測器已經拜訪過太陽系所有的行星。2005 年，惠更斯號降落在土星的衛星「泰坦」上，是<b>人類機器降落最遠的地方</b>。',
+         '2015 年，新視野號飛過冥王星，第一次拍到它清楚的樣子，上面還有一個愛心形狀的地形！']},
+ {em:'🛰️',name:'航海家1號',short:'航海家1號',kind:'人類做的東西飛最遠的地方',km:2.59e10,
+  stats:[['📏','距離','約 259 億公里','2026 年 11 月 18 日'],['💡','光要跑多久','整整 24 小時','也就是「1 光日」'],['✈️','搭飛機','','']],
+  badge:['🛰️ 人造物體的最遠紀錄',''],
+  facts:['航海家1號在 1977 年發射，是<b>人類做出來飛得最遠的東西</b>，現在每小時大約飛 6 萬公里。',
+         '2026 年 11 月 18 日，它離地球達到「1 光日」——連光都要跑一整天才追得到它！科學家傳一個指令過去，要等 2 天才收得到回覆。',
+         '它在 2012 年飛出了太陽風吹出來的大泡泡（日球層），進入恆星和恆星之間的「星際空間」。',
+         '它身上帶著一張「金唱片」，錄了地球的聲音、音樂和許多語言的問候，送給未來可能遇到它的外星朋友。']},
+ {em:'☄️',name:'歐特雲',short:'歐特雲',kind:'太陽系最外圍（科學家推測）',km:1.496e13,
+  stats:[['📏','距離','約 3000 億～15 兆公里','2,000～100,000 天文單位'],['💡','光要跑多久','最外圍約 1.6 年',''],['✈️','搭飛機（到最外圍）','','']],
+  badge:['❓ 還沒有東西到過','unk'],
+  facts:['科學家認為，太陽系最外面包著一大團冰冷的彗星雲，叫做「歐特雲」，像一個巨大的泡泡把太陽系包起來。',
+         '有些很久很久才回來一次的彗星，可能就是從這裡飛來的。',
+         '看看中間那一小點：所有的行星和航海家1號，都擠在那一點點裡面！',
+         '航海家1號大約還要 300 年才會進入歐特雲，然後還要再飛大約 3 萬年才能穿過它。']},
+ {em:'⭐⭐',name:'半人馬座α 恆星系',short:'最近的恆星',kind:'離我們最近的「恆星系」',km:4.011e13,
+  stats:[['📏','距離','約 40 兆公里','4.24 光年（比鄰星）'],['💡','光要跑多久','約 4.24 年',''],['✈️','搭飛機','','']],
+  badge:['🔭 只能用望遠鏡觀察','tele'],
+  facts:['這是離太陽系最近的「恆星系」，由 3 顆恆星組成：半人馬座α A、B，還有<b>比鄰星</b>。',
+         '比鄰星是離我們最近的恆星，它是一顆又小又暗的紅矮星，身邊已經發現了行星，其中「比鄰星 b」大小跟地球差不多。',
+         '就算搭航海家1號那麼快的太空船，也要飛大約 <b>7 萬 5 千年</b>才會到！',
+         '分清楚：「恆星系」是一顆或幾顆恆星和它的行星；「星系」是由幾千億顆恆星組成的超級大家族。下一站就帶你看星系！']},
+ {em:'🌌',name:'銀河系',short:'銀河系',kind:'我們住的星系',km:9.46e17,
+  stats:[['📏','大小','直徑約 10 萬光年','約 95 京公里…大到數不清！'],['💡','光要跑多久','10 萬年才能橫越',''],['✈️','搭飛機橫越','','']],
+  badge:['🏠 我們就住在裡面',''],
+  facts:['太陽只是銀河系裡<b>數千億顆</b>恆星中的一顆，位在離銀河中心大約 2 萬 6 千光年的地方（找找看「你在這裡」）。',
+         '銀河系的形狀像一個旋轉的大風車，中心有一個超大質量黑洞。',
+         '在沒有光害的晚上，天空中那條白白的「銀河」，其實就是我們從裡面看自己的星系！']},
+ {em:'🌀',name:'最近的星系們',short:'最近的星系',kind:'銀河系的鄰居',km:2.365e19,
+  stats:[['📏','最近的星系','大犬座矮星系','約 2.5 萬光年'],['☁️','最大的衛星星系','大麥哲倫雲','約 16.3 萬光年'],['🌀','最近的大型螺旋星系','仙女座星系','約 250 萬光年']],
+  badge:['🔭 只能用望遠鏡觀察','tele'],
+  facts:['離銀河系最近的星系是「<b>大犬座矮星系</b>」，大約 2 萬 5 千光年，它正被銀河系慢慢拉扯、吞進來。（有些科學家認為它不算獨立的星系）',
+         '<b>大麥哲倫雲</b>是銀河系最大的衛星星系，大約 16 萬 3 千光年遠，在南半球用眼睛就看得到。',
+         '<b>仙女座星系</b>是離我們最近的大型螺旋星系，大約 250 萬光年遠。你今天看到它的光，是 250 萬年前出發的！',
+         '仙女座星系正在朝銀河系靠近，科學家預測幾十億年後，兩個星系可能會撞在一起、合併成一個。']},
+ {em:'✨',name:'可觀測宇宙',short:'宇宙邊界',kind:'人類「看」得到的極限',km:4.4e23,
+  stats:[['📏','大小','半徑約 465 億光年',''],['🎂','宇宙年齡','約 138 億歲',''],['🔭','看過最遠的星系','MoM-z14','現在距離約 338 億光年']],
+  badge:['🔭 人類用望遠鏡看到最遠的地方','tele'],
+  facts:['宇宙大約誕生於 138 億年前的「大霹靂」。因為光跑過來需要時間，我們能看到的範圍有一個極限，叫做「<b>可觀測宇宙</b>」。',
+         '2026 年，NASA 確認韋伯太空望遠鏡看到了目前最遠的星系 <b>MoM-z14</b>：它的光在宇宙才 2.8 億歲時就出發了，跑了大約 135 億年才到我們這裡！',
+         '看得越遠，就是看到越久以前的宇宙——望遠鏡就像一台時光機！',
+         '圖中每一個小光點都代表很多很多星系，它們排成像蜘蛛網一樣的「宇宙網」。宇宙中有數千億個以上的星系！']}
+];
+const RECORDS = [
+ ['🧑‍🚀','人「親自」去過最遠','約 40.7 萬公里','2026 年 4 月，Artemis II 太空人繞到月球背面，打破阿波羅 13 號維持 56 年的紀錄。'],
+ ['👣','人踏上過最遠的星球','月球','1969～1972 年，共有 12 位太空人在月球上走過。'],
+ ['🤖','機器人降落最遠','土衛六「泰坦」','2005 年，惠更斯號降落在土星的衛星泰坦上。'],
+ ['🛰️','人造物體飛最遠','航海家1號','2026 年 11 月 18 日到達離地球 1 光日，約 259 億公里。'],
+ ['🔭','望遠鏡看最遠','星系 MoM-z14','韋伯太空望遠鏡看到大霹靂後 2.8 億年的星系，現在距離約 338 億光年。'],
+ ['🌌','能觀測的極限','可觀測宇宙','半徑約 465 億光年。再遠的地方，光還來不及跑到地球。']
+];
+
+const QUIZ = [
+ {q:'哪一顆行星最大？',o:['土星','木星','地球','海王星'],a:1,p:'jupiter',e:'木星直徑大約 14 萬公里，是地球的 11 倍寬，大約可以裝進 1300 顆地球！'},
+ {q:'哪一顆行星最熱？',o:['水星','火星','金星','太陽'],a:2,p:'venus',e:'金星平均 464°C！厚厚的二氧化碳大氣像棉被一樣把熱留住，所以比離太陽更近的水星還熱。（太陽是恆星，不是行星喔！）'},
+ {q:'哪一顆行星的衛星最多？',o:['木星','天王星','地球','土星'],a:3,p:'saturn',e:'到 2026 年，土星已確認有 293 顆衛星，是衛星最多的行星！'},
+ {q:'哪一顆行星是「躺著」轉的？',o:['天王星','金星','火星','水星'],a:0,p:'uranus',e:'天王星的自轉軸傾斜了大約 98 度，好像躺在軌道上滾動一樣。'},
+ {q:'火星為什麼看起來紅紅的？',o:['因為它很熱','因為表面有生鏽的鐵','因為有紅色的海','因為被太陽曬傷了'],a:1,p:'mars',e:'火星的土壤和岩石裡有很多「氧化鐵」，也就是鐵生鏽了，所以看起來紅紅的。'},
+ {q:'陽光從太陽到地球，大約要多久？',o:['1 秒','約 8 分鐘','1 天','1 年'],a:1,p:'earth',e:'光跑得超快，但太陽離我們大約 1.5 億公里，所以陽光大約要 8 分鐘才會到地球。到「真實比例」裡和陽光賽跑看看！'},
+ {q:'在哪一顆行星上，你的體重會變得最重？',o:['木星','土星','海王星','地球'],a:0,p:'jupiter',e:'木星的重力是地球的大約 2.4 倍。在地球 30 公斤的小朋友，到木星會變成大約 71 公斤！'},
+ {q:'哪一顆行星離太陽最遠？',o:['天王星','土星','海王星','冥王星'],a:2,p:'neptune',e:'海王星是離太陽最遠的行星，大約 45 億公里！冥王星現在被歸類為「矮行星」。'},
+ {q:'金星「自轉一圈」和「繞太陽一圈」，哪個比較久？',o:['繞太陽一圈比較久','自轉一圈比較久','一樣久','金星不會自轉'],a:1,p:'venus',e:'金星自轉一圈要 243 天，繞太陽一圈只要 225 天，自轉比公轉還慢！'},
+ {q:'土星的環是由什麼組成的？',o:['彩色的氣體','金屬做的圓盤','冰塊和岩石','彩虹'],a:2,p:'saturn',e:'土星環是由無數大大小小的冰塊和岩石組成的，小的像沙粒，大的像房子。'},
+ {q:'離太陽系最近的恆星是哪一顆？',o:['北極星','比鄰星','天狼星','織女星'],a:1,c:4,e:'比鄰星大約 4.24 光年遠，屬於「半人馬座α」恆星系。光要跑 4 年多才到！'},
+ {q:'目前人類做出來、飛得最遠的東西是什麼？',o:['國際太空站','哈伯太空望遠鏡','航海家1號','阿波羅11號'],a:2,c:2,e:'航海家1號 1977 年發射，2026 年 11 月 18 日到達離地球 1 光日（約 259 億公里）。'},
+ {q:'「光年」是用來量什麼的？',o:['時間','距離','重量','溫度'],a:1,c:5,e:'光年雖然有個「年」字，但它是「距離」：光走一年的距離，大約 9 兆 5 千億公里。'},
+ {q:'太空人本人親自去過最遠的地方在哪裡附近？',o:['火星','月球','木星','太陽'],a:1,c:0,e:'2026 年 Artemis II 的太空人繞過月球背面，到達離地球約 40.7 萬公里，是人類親自到過最遠的地方。'},
+ {q:'離我們最近的「大型螺旋星系」是哪一個？',o:['仙女座星系','大麥哲倫雲','太陽系','北斗七星'],a:0,c:6,e:'仙女座星系大約 250 萬光年遠，是離銀河系最近的大型螺旋星系。'}
+];
+
+/* ===================== 小工具 ===================== */
+const $ = s => document.querySelector(s);
+const fmtInt = n => Math.round(n).toLocaleString('zh-TW');
+function fmtDist(m){ const km=m*1e6; return km<1e8 ? fmtInt(km/1e4)+' 萬公里' : (km/1e8).toFixed(1)+' 億公里'; }
+function fmtKm(km){ return km<1e4 ? fmtInt(km)+' 公里' : km<1e8 ? fmtInt(km/1e4)+' 萬公里' : km<1e12 ? (km/1e8).toFixed(km<1e9?2:1)+' 億公里' : (km/1e12).toFixed(1)+' 兆公里'; }
+function fmtDay(h){ return h>48 ? '約 '+Math.round(h/24)+' 個地球日' : (Math.abs(h-24)<0.05?'24 小時':'約 '+h.toFixed(1)+' 小時'); }
+function fmtYear(d){ return d<1000 ? Math.round(d)+' 天' : '約 '+(d/365.25).toFixed(1)+' 年'; }
+function lightTime(m){ const s=m*1e6/299792; const min=Math.round(s/60); return min<60? '約 '+min+' 分鐘' : '約 '+Math.floor(min/60)+' 小時 '+(min%60)+' 分鐘'; }
+function fmtSec(s){ s=Math.floor(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+' 小時 ':'')+(h||m?m+' 分 ':'')+x+' 秒'; }
+function zhNum(n){ if(n>=1e12) return (n/1e12).toFixed(n>=1e13?0:1).replace(/\.0$/,'')+' 兆'; if(n>=1e8) return (n/1e8).toFixed(n>=1e9?0:1).replace(/\.0$/,'')+' 億'; if(n>=1e4) return (n/1e4).toFixed(n>=1e5?0:1).replace(/\.0$/,'')+' 萬'; return fmtInt(n); }
+function planeTime(km){ const h=km/900; if(h<48) return '約 '+Math.round(h)+' 小時'; const d=h/24; if(d<365) return '約 '+Math.round(d)+' 天';
+  const y=d/365.25; if(y>1e15) return '比宇宙的年齡還要久好幾百萬倍！'; return '約 '+zhNum(y)+' 年'; }
+function rng(seed){ let s=seed%2147483647; if(s<=0)s+=2147483646; return ()=> (s=s*16807%2147483647)/2147483647; }
+const lerp=(a,b,t)=>a+(b-a)*t, ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const gaussF=r=>()=> (r()+r()+r()+r()-2)*0.87;
+
+/* ===================== 程序產生的貼圖 ===================== */
+function makeTex(w,h,draw){ const c=document.createElement('canvas'); c.width=w;c.height=h; const g=c.getContext('2d'); draw(g,w,h); const t=new THREE.CanvasTexture(c); t.anisotropy=4; return t; }
+function blobs(g,w,h,r,n,colors,rmin,rmax,alpha){
+  for(let i=0;i<n;i++){ const x=r()*w,y=r()*h,rad=rmin+r()*(rmax-rmin); g.globalAlpha=alpha*(0.5+r()*0.5);
+    g.fillStyle=colors[Math.floor(r()*colors.length)]; g.beginPath(); g.ellipse(x,y,rad*1.4,rad,0,0,Math.PI*2); g.fill();
+    if(x<rmax*1.5){g.beginPath();g.ellipse(x+w,y,rad*1.4,rad,0,0,Math.PI*2);g.fill();}
+    if(x>w-rmax*1.5){g.beginPath();g.ellipse(x-w,y,rad*1.4,rad,0,0,Math.PI*2);g.fill();} }
+  g.globalAlpha=1;
+}
+function bands(g,w,h,r,cols,wav){
+  let y=0; while(y<h){ const bh=4+r()*h/14; g.fillStyle=cols[Math.floor(r()*cols.length)]; g.beginPath(); g.moveTo(0,y);
+    const ph=r()*6, amp=wav*(0.4+r());
+    for(let x=0;x<=w;x+=8) g.lineTo(x,y+Math.sin(x/w*Math.PI*2*3+ph)*amp);
+    for(let x=w;x>=0;x-=8) g.lineTo(x,y+bh+Math.sin(x/w*Math.PI*2*3+ph+1)*amp);
+    g.closePath(); g.fill(); y+=bh*0.8; }
+}
+const TEX = {
+  sun:()=>makeTex(512,256,(g,w,h)=>{g.fillStyle='#ffa000';g.fillRect(0,0,w,h);const r=rng(7);blobs(g,w,h,r,900,['#ffd54f','#ff8f00','#ffca28','#ff6f00'],2,10,.5);}),
+  mercury:()=>makeTex(512,256,(g,w,h)=>{g.fillStyle='#8f8a85';g.fillRect(0,0,w,h);const r=rng(11);blobs(g,w,h,r,500,['#7a756f','#a39e98','#6b665f','#b3aea7'],3,14,.5);
+    for(let i=0;i<90;i++){const x=r()*w,y=r()*h,rad=2+r()*9;g.fillStyle='rgba(60,55,50,.55)';g.beginPath();g.arc(x,y,rad,0,7);g.fill();g.strokeStyle='rgba(210,205,198,.5)';g.lineWidth=1.2;g.beginPath();g.arc(x+.8,y+.8,rad,0,7);g.stroke();}}),
+  venus:()=>makeTex(512,256,(g,w,h)=>{g.fillStyle='#e3bf7e';g.fillRect(0,0,w,h);const r=rng(21);bands(g,w,h,r,['#efd29b','#d9ae66','#e8c88a','#f3dfb4','#cf9f58'],7);
+    blobs(g,w,h,r,200,['#fff1d0','#c9954e'],6,22,.18);}),
+  earth:()=>makeTex(1024,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#1c4f8f');gr.addColorStop(.5,'#2370c4');gr.addColorStop(1,'#1c4f8f');g.fillStyle=gr;g.fillRect(0,0,w,h);
+    const r=rng(42); const cont=[[.2,.3,.11],[.25,.62,.08],[.52,.28,.09],[.55,.55,.1],[.72,.3,.12],[.83,.68,.06],[.42,.2,.05]];
+    cont.forEach(([cx,cy,s])=>{for(let i=0;i<70;i++){const a=r()*7,d=r()*s*w*.9;const x=cx*w+Math.cos(a)*d*1.2,y=cy*h+Math.sin(a)*d*.9;g.fillStyle=['#3f8f3f','#5d9a45','#7a9a4a','#b39b6b','#2f7a3a'][Math.floor(r()*5)];g.globalAlpha=.85;g.beginPath();g.ellipse(x,y,6+r()*22,5+r()*16,r()*3,0,7);g.fill();}});
+    g.globalAlpha=1;g.fillStyle='#f4f8ff';g.fillRect(0,0,w,h*.06);g.fillRect(0,h*.94,w,h*.06);blobs(g,w,h*.12,r,60,['#f4f8ff'],6,18,.9);
+    g.save();g.translate(0,h*.88);blobs(g,w,h*.12,r,60,['#f4f8ff'],6,18,.9);g.restore();}),
+  clouds:()=>makeTex(1024,512,(g,w,h)=>{g.clearRect(0,0,w,h);const r=rng(77);for(let i=0;i<260;i++){const x=r()*w,y=h*.12+r()*h*.76;g.globalAlpha=.08+r()*.22;g.fillStyle='#fff';g.beginPath();g.ellipse(x,y,20+r()*60,4+r()*10,r()*.4-.2,0,7);g.fill();}}),
+  mars:()=>makeTex(512,256,(g,w,h)=>{g.fillStyle='#c1501f';g.fillRect(0,0,w,h);const r=rng(5);blobs(g,w,h,r,500,['#8a3210','#e07040','#a8421a','#d9733f'],4,20,.55);
+    g.fillStyle='#fff3ea';g.fillRect(0,0,w,h*.05);g.fillRect(0,h*.95,w,h*.05);}),
+  jupiter:()=>makeTex(1024,512,(g,w,h)=>{g.fillStyle='#d8b48a';g.fillRect(0,0,w,h);const r=rng(9);bands(g,w,h,r,['#e9d3b0','#c48c5c','#f4e6cc','#b37750','#d9a877','#a86d48','#efdcc0'],5);
+    g.fillStyle='#b5543a';g.beginPath();g.ellipse(w*.65,h*.64,46,24,0,0,7);g.fill();g.fillStyle='#d4785a';g.beginPath();g.ellipse(w*.65,h*.64,30,14,0,0,7);g.fill();}),
+  saturn:()=>makeTex(1024,512,(g,w,h)=>{g.fillStyle='#e3cf9a';g.fillRect(0,0,w,h);const r=rng(13);bands(g,w,h,r,['#ecdcae','#d4b97c','#f2e4bd','#c9a96a','#e6d29f'],3);}),
+  uranus:()=>makeTex(512,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#b5eef2');gr.addColorStop(.5,'#8fd9e0');gr.addColorStop(1,'#7cc8d6');g.fillStyle=gr;g.fillRect(0,0,w,h);const r=rng(17);g.globalAlpha=.25;bands(g,w,h,r,['#a4e4ea','#86d0da'],1);g.globalAlpha=1;}),
+  neptune:()=>makeTex(512,256,(g,w,h)=>{g.fillStyle='#3f66d9';g.fillRect(0,0,w,h);const r=rng(19);bands(g,w,h,r,['#3558c8','#4a74e8','#3f66d9','#2f4fb8'],3);
+    g.fillStyle='#1f3290';g.beginPath();g.ellipse(w*.4,h*.62,22,12,0,0,7);g.fill();blobs(g,w,h,r,25,['#dfe8ff'],3,9,.5);}),
+  moon:()=>makeTex(256,128,(g,w,h)=>{g.fillStyle='#9e9e9e';g.fillRect(0,0,w,h);const r=rng(3);blobs(g,w,h,r,140,['#7d7d7d','#b8b8b8','#6e6e6e'],2,9,.5);})
+};
+function ringTex(inner,outer,palette,seed){
+  return makeTex(512,512,(g,w,h)=>{const r=rng(seed);const c=w/2;const r0=inner/outer*c;
+    for(let rad=r0;rad<c;rad+=1){const t=(rad-r0)/(c-r0);let a=0.35+0.55*r();if(t>0.62&&t<0.67)a=0.05; if(t<0.05)a*=t/0.05; if(t>0.95)a*=(1-t)/0.05;
+      const col=palette[Math.floor(r()*palette.length)];g.strokeStyle=`rgba(${col},${a})`;g.lineWidth=1.4;g.beginPath();g.arc(c,c,rad,0,Math.PI*2);g.stroke();}});
+}
+const glowTex = makeTex(256,256,(g)=>{const gr=g.createRadialGradient(128,128,0,128,128,128);gr.addColorStop(0,'rgba(255,230,150,1)');gr.addColorStop(.25,'rgba(255,190,80,.55)');gr.addColorStop(.6,'rgba(255,140,40,.12)');gr.addColorStop(1,'rgba(255,120,0,0)');g.fillStyle=gr;g.fillRect(0,0,256,256);});
+const dotTex = makeTex(64,64,(g)=>{const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.3,'rgba(255,255,255,.8)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);});
+function sprite(color,scale,opts={}){ const m=new THREE.SpriteMaterial({map:opts.map||dotTex,color,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:opts.opacity??1,sizeAttenuation:opts.att??true});
+  const s=new THREE.Sprite(m); s.scale.setScalar(scale); return s; }
+function makeStars(){ const n=4000,pos=new Float32Array(n*3),col=new Float32Array(n*3);const r=rng(99);
+  for(let i=0;i<n;i++){const u=r()*2-1,th=r()*Math.PI*2,R=900+r()*600,s=Math.sqrt(1-u*u);pos.set([R*s*Math.cos(th),R*u,R*s*Math.sin(th)],i*3);
+    const t=r();col.set(t<.15?[1,.85,.7]:t<.3?[.7,.8,1]:[1,1,1],i*3);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({size:1.6,sizeAttenuation:false,vertexColors:true,transparent:true,opacity:.9,depthWrite:false})); }
+function pointCloud(pos,col,size){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({size,map:dotTex,vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})); }
+function circleLine(R,color,opacity,seg=256){ const pts=[]; for(let k=0;k<=seg;k++){const a=k/seg*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*R,0,-Math.sin(a)*R));}
+  return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color,transparent:true,opacity,depthWrite:false})); }
+function dashLine(a,b,color){ const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineDashedMaterial({color,dashSize:2,gapSize:1.5,transparent:true,opacity:.8})); l.computeLineDistances(); return l; }
+
+/* ===================== 3D：太陽系場景 ===================== */
+const canvas=$('#scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,logarithmicDepthBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,1,0.001,1e6);
+const HOME_POS=new THREE.Vector3(0,62,118), HOME_TGT=new THREE.Vector3(0,0,0);
+camera.position.copy(HOME_POS);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=0.08; controls.minDistance=0.01; controls.maxDistance=20000;
+
+scene.add(new THREE.AmbientLight(0xffffff,0.3));
+const sunLight=new THREE.PointLight(0xfff2d8,1.55,0); scene.add(sunLight);
+const stars=makeStars(); scene.add(stars);
+
+const sphereGeo=new THREE.SphereGeometry(1,64,32);
+const sun=new THREE.Mesh(new THREE.SphereGeometry(SUN.vr,64,32),new THREE.MeshBasicMaterial({map:TEX.sun()}));
+sun.userData.obj=SUN; scene.add(sun); SUN.holder=sun;
+const glow=sprite(0xffffff,30,{map:glowTex}); scene.add(glow);
+const sunMarker=sprite(0xffd166,0.05,{att:false,opacity:0}); scene.add(sunMarker);
+
+// 真實距離比例：1 天文單位 = 40 單位
+const AUS=40, ER=6378/149.6e6*AUS;   // 地球半徑（以場景單位計）
+const pickables=[sun];
+PLANETS.forEach((p,i)=>{
+  p.index=i+1; p.trueR=p.diameter/EARTH_D; p.au=p.dist/149.6; p.angle=rng(i*31+5)()*Math.PI*2; p.size=p.vr;
+  const holder=new THREE.Group(); scene.add(holder);
+  const tiltG=new THREE.Group(); tiltG.rotation.z=THREE.MathUtils.degToRad(p.tilt); holder.add(tiltG);
+  const mesh=new THREE.Mesh(sphereGeo,new THREE.MeshStandardMaterial({map:TEX[p.key](),roughness:.9,metalness:0}));
+  mesh.userData.obj=p; tiltG.add(mesh); pickables.push(mesh);
+  if(p.key==='earth'){ const cl=new THREE.Mesh(sphereGeo,new THREE.MeshStandardMaterial({map:TEX.clouds(),transparent:true,depthWrite:false,roughness:1}));
+    cl.scale.setScalar(1.025); tiltG.add(cl); p.clouds=cl;
+    const pivot=new THREE.Group(); holder.add(pivot); const moon=new THREE.Mesh(sphereGeo,new THREE.MeshStandardMaterial({map:TEX.moon(),roughness:1}));
+    moon.scale.setScalar(.27); moon.position.x=2.3; pivot.add(moon); p.moonPivot=pivot; }
+  if(p.key==='saturn'){ const ring=new THREE.Mesh(new THREE.RingGeometry(1.24,2.3,128),new THREE.MeshStandardMaterial({map:ringTex(1.24,2.3,['230,210,160','200,180,130','245,232,200','180,160,120'],3),transparent:true,side:THREE.DoubleSide,depthWrite:false,roughness:1}));
+    ring.rotation.x=-Math.PI/2; tiltG.add(ring); }
+  if(p.key==='uranus'){ const ring=new THREE.Mesh(new THREE.RingGeometry(1.6,2.0,128),new THREE.MeshBasicMaterial({map:ringTex(1.6,2.0,['170,220,230','140,190,210'],8),transparent:true,opacity:.45,side:THREE.DoubleSide,depthWrite:false}));
+    ring.rotation.x=-Math.PI/2; tiltG.add(ring); }
+  const line=circleLine(p.orbit,0x5577cc,.4); scene.add(line);
+  const marker=sprite(new THREE.Color(p.color),0.022,{att:false,opacity:0}); holder.add(marker);
+  Object.assign(p,{holder,tiltG,mesh,line,marker,lineA:1});
+});
+const belt=(function(){const n=2200,pos=[],col=[];const r=rng(123);
+  for(let i=0;i<n;i++){const a=r()*Math.PI*2,R=35+r()*6+(r()-.5)*1.5;pos.push(Math.cos(a)*R,(r()-.5)*1.2,Math.sin(a)*R);col.push(.66,.6,.52);}
+  const pts=pointCloud(pos,col,.35); pts.material.blending=THREE.NormalBlending; pts.material.opacity=.85; scene.add(pts); return pts;})();
+// 陽光賽跑的光環
+const lightRing=new THREE.Mesh(new THREE.RingGeometry(0.985,1,256),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+lightRing.rotation.x=-Math.PI/2; lightRing.visible=false; scene.add(lightRing);
+
+// 真實大小排排站
+const SUN_TRUE_R=109, GAP=2.5;
+let lx=0; PLANETS.forEach(p=>{ lx+=p.trueR; p.lineX=lx; lx+=p.trueR+GAP; });
+const LINE_END=lx, SUN_LINE_X=-SUN_TRUE_R-3;
+
+/* ===================== 狀態 ===================== */
+const state={mode:'explore',real:'size',mag:1,playing:true,speed:1,showOrbit:true,showLabel:true,selected:null,flight:null,follow:null,
+  lastPos:new THREE.Vector3(),weight:30,age:10,blendT:1,blendDur:1.8,station:0,
+  light:{on:false,r:0,mul:100,reached:new Set(),autoCam:true,done:false}};
+const tmp=new THREE.Vector3();
+const layoutKey=()=> state.mode==='real' ? state.real : 'explore';
+
+function targetOf(p,key){
+  if(key==='size') return {x:p.lineX,z:0,size:p.trueR,ls:1,la:0,mk:0};
+  if(key==='dist'){ const R=p.au*AUS; return {x:Math.cos(p.angle)*R,z:-Math.sin(p.angle)*R,size:p.trueR*ER*state.mag,ls:R/p.orbit,la:1,mk:1}; }
+  return {x:Math.cos(p.angle)*p.orbit,z:-Math.sin(p.angle)*p.orbit,size:p.vr,ls:1,la:1,mk:0};
+}
+function sunTarget(key){
+  if(key==='size') return {x:SUN_LINE_X,s:SUN_TRUE_R/SUN.vr,g:30*SUN_TRUE_R/SUN.vr,ga:.1,mk:0};
+  if(key==='dist') return {x:0,s:SUN_TRUE_R*ER/SUN.vr,g:7,ga:1,mk:1};
+  return {x:0,s:1,g:30,ga:1,mk:0};
+}
+const beltTarget=key=> key==='size'?{s:1,a:0}:key==='dist'?{s:2.84,a:.85}:{s:1,a:.85};
+function startBlend(dur=1.8){
+  PLANETS.forEach(p=>{ p.from={x:p.holder.position.x,z:p.holder.position.z,size:p.size,ls:p.line.scale.x,la:p.lineA,mk:p.marker.material.opacity}; });
+  sun.from={x:sun.position.x,s:sun.scale.x,g:glow.scale.x,ga:glow.material.opacity,mk:sunMarker.material.opacity};
+  belt.from={s:belt.scale.x,a:belt.material.opacity};
+  state.blendT=0; state.blendDur=dur;
+}
+
+/* ===================== 標籤與選單 ===================== */
+const labelBox=$('#labels'), chipBox=$('#chips');
+[SUN,...PLANETS].forEach(o=>{
+  const l=document.createElement('div'); l.className='lbl'; l.innerHTML=o.name; l.onclick=()=>select(o); labelBox.appendChild(l); o.label=l;
+  const c=document.createElement('button'); c.className='chip'; c.innerHTML=`<i style="background:${o.color};color:${o.color}"></i>${o.name}`; c.onclick=()=>select(o); chipBox.appendChild(c); o.chip=c;
+});
+function updateLabelText(){ const k=layoutKey(); PLANETS.forEach(p=>{
+  p.label.innerHTML = k==='size' ? `${p.name}<small>地球的 ${p.trueR<1?p.trueR.toFixed(2):p.trueR.toFixed(1)} 倍</small>`
+    : k==='dist' ? `${p.name}<small>${p.au<2?p.au.toFixed(2):p.au.toFixed(1)} 天文單位</small>` : p.name; }); }
+
+/* ===================== 鏡頭 ===================== */
+const objPos=(o,out)=>out.copy(o.holder.position);
+const objSize=o=> o===SUN ? SUN.vr*sun.scale.x : o.size;
+function flyTo(getEnd,dur=1.6,followObj=null){
+  state.flight={t:0,dur,fromPos:camera.position.clone(),fromTgt:controls.target.clone(),getEnd,followObj};
+  state.follow=null; controls.enabled=false;
+}
+function flyToObj(o){
+  flyTo(()=>{ const key=layoutKey(); const pos=objPos(o,new THREE.Vector3()); const s=objSize(o); let dir;
+    if(o===SUN){ dir=camera.position.clone().sub(controls.target).normalize(); if(dir.y<.2){dir.y=.35;dir.normalize();}
+      const d = key==='size'? s*1.6 : key==='dist'? 25 : s*3.6; return {pos:pos.clone().add(dir.multiplyScalar(d)),tgt:pos}; }
+    if(key==='size'){ dir=new THREE.Vector3(0,.25,1).normalize(); }
+    else { const toSun=new THREE.Vector3(-pos.x,0,-pos.z).normalize(); const side=new THREE.Vector3(-toSun.z,0,toSun.x); dir=toSun.multiplyScalar(.75).add(side.multiplyScalar(.75)); dir.y=.45; dir.normalize(); }
+    let dist = s*(o.key==='saturn'?5.2:o.key==='uranus'?4.6:4.2)+1.5;
+    if(key==='dist') dist=Math.max(s*5,6);
+    return {pos:pos.clone().add(dir.multiplyScalar(dist)),tgt:pos};
+  },1.6,o);
+}
+function compareView(){ const cx=LINE_END/2; const half=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+  const d=Math.max(55,(LINE_END/2+8)/(half*camera.aspect)); return {pos:new THREE.Vector3(cx,d*.22,d),tgt:new THREE.Vector3(cx,0,0)}; }
+function distView(which){ const R = which==='inner' ? 1.7*AUS : 31*AUS; const half=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+  const d = R*1.05/(half*Math.min(camera.aspect,1)); return {pos:new THREE.Vector3(0,d*.62,d*.78),tgt:new THREE.Vector3(0,0,0)}; }
+function homeView(){ const k=layoutKey(); return k==='size'?compareView():k==='dist'?distView('all'):{pos:HOME_POS.clone(),tgt:HOME_TGT.clone()}; }
+function goHome(){ deselect(); flyTo(homeView,1.6); }
+
+/* ===================== 互動：點選 ===================== */
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(); let downXY=null;
+canvas.addEventListener('pointerdown',e=>{downXY=[e.clientX,e.clientY];});
+canvas.addEventListener('pointerup',e=>{ if(!downXY)return; const dx=e.clientX-downXY[0],dy=e.clientY-downXY[1]; downXY=null; if(dx*dx+dy*dy>36)return;
+  if(state.mode==='cosmos') return;
+  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1); ray.setFromCamera(mouse,camera);
+  const hit=ray.intersectObjects(pickables,false)[0]; if(hit) select(hit.object.userData.obj); });
+canvas.addEventListener('pointerdown',()=>hideHint(),{once:true});
+controls.addEventListener('start',()=>{ state.light.autoCam=false; });
+
+function select(o){
+  state.selected=o; hideHint();
+  [SUN,...PLANETS].forEach(x=>{x.label.classList.toggle('sel',x===o); x.chip.classList.toggle('sel',x===o);});
+  PLANETS.forEach(p=>p.line.material.color.set(p===o?0xffd166:0x5577cc));
+  $('#panelBody').innerHTML = o===SUN ? sunPanel() : planetPanel(o);
+  $('#panelBody').scrollTop=0; $('#panel').classList.add('open'); bindCalc(o);
+  o.chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  flyToObj(o);
+}
+function deselect(){ state.selected=null; $('#panel').classList.remove('open');
+  [SUN,...PLANETS].forEach(x=>{x.label.classList.remove('sel');x.chip.classList.remove('sel');});
+  PLANETS.forEach(p=>p.line.material.color.set(0x5577cc)); }
+$('#closePanel').onclick=goHome;
+
+/* ===================== 資訊面板 ===================== */
+const stat=(icon,k,v,n='')=>`<div class="stat"><div class="k">${icon} ${k}</div><div class="v">${v}</div>${n?`<div class="n">${n}</div>`:''}</div>`;
+function planetPanel(p){
+  const r=p.diameter/EARTH_D, g=p.gravity/EARTH_G;
+  const sizeTxt = p.key==='earth' ? '這就是我們的標準！' : r<1 ? `比地球小，大約是地球的 ${r.toFixed(2)} 倍` : `比地球大，大約是地球的 ${r.toFixed(1)} 倍寬`;
+  const gTxt = p.key==='earth' ? '1 倍（標準）' : `地球的 ${g.toFixed(2)} 倍`;
+  const driveYears = Math.round(p.dist*1e6/100/24/365.25);
+  return `
+  <div class="ph" style="--c:${p.color}"><div class="ph-dot"></div>
+    <div><h2>${p.name}<small>${p.en}</small></h2><span class="tag">${p.type}</span><span class="order">從太陽往外數第 ${p.index} 顆</span></div></div>
+  <p class="intro">${p.intro}</p>
+  <div class="stats">
+    ${stat('📏','大小（直徑）',fmtInt(p.diameter)+' 公里',sizeTxt)}
+    ${stat('🏋️','重力',gTxt,g>1.05?'比地球重力大，會覺得身體變重':g<0.95?'比地球重力小，可以跳得比較高':'跟地球差不多')}
+    ${stat('🌙','衛星數量',p.moons+' 顆',p.moonNote)}
+    ${stat('🌡️','平均溫度',p.temp+'°C',p.tempNote)}
+    ${stat('☀️','離太陽距離',fmtDist(p.dist),`${p.au.toFixed(p.au<2?2:1)} 天文單位，陽光要跑 ${lightTime(p.dist)}`)}
+    ${stat('🔄','一天有多長',fmtDay(p.day),'從日出到下一次日出')}
+    ${stat('🗓️','一年有多長',fmtYear(p.period),'繞太陽一圈的時間')}
+    ${stat('💍','有沒有環',p.rings?'有':'沒有',p.ringNote)}
+  </div>
+  <div class="state"><b>🧱 它是什麼樣的星球？</b><br>${p.type}：${p.typeNote}</div>
+  <div class="calc"><h3>🧮 算算看</h3>
+    <label>我在地球的體重 <input type="number" id="wIn" min="1" max="200" value="${state.weight}"> 公斤</label><div class="res" id="wOut"></div>
+    <label>我在地球的年齡 <input type="number" id="aIn" min="1" max="120" value="${state.age}"> 歲</label><div class="res" id="aOut"></div>
+  </div>
+  <h3 class="sec">🤩 你知道嗎？</h3>
+  <ul class="facts">${p.facts.map(f=>`<li>${f}</li>`).join('')}</ul>
+  <div class="drive">🚗 如果開一台時速 100 公里的汽車，從太陽出發不停地開，大約要開 <b>${fmtInt(driveYears)} 年</b>才會到${p.name}！</div>`;
+}
+function sunPanel(){
+  return `
+  <div class="ph" style="--c:#ffb300"><div class="ph-dot"></div><div><h2>太陽<small>Sun</small></h2><span class="tag">恆星</span><span class="order">太陽系的中心</span></div></div>
+  <p class="intro">${SUN.intro}</p>
+  <div class="stats">
+    ${stat('📏','大小（直徑）','約 139 萬公里','是地球的 109 倍寬')}
+    ${stat('📦','可以裝幾顆地球','約 130 萬顆','超級無敵大！')}
+    ${stat('🌡️','表面溫度','約 5500°C','中心更熱，約 1500 萬°C')}
+    ${stat('🏋️','重力','地球的 28 倍','如果能站上去，會重到站不起來')}
+    ${stat('🎂','年齡','約 46 億歲','大概再過 50 億年才會老去')}
+    ${stat('💡','會發光嗎？','會！','行星和月亮都是反射太陽光')}
+  </div>
+  <div class="calc"><h3>🧮 算算看</h3>
+    <label>我在地球的體重 <input type="number" id="wIn" min="1" max="200" value="${state.weight}"> 公斤</label><div class="res" id="wOut"></div>
+  </div>
+  <h3 class="sec">🤩 你知道嗎？</h3>
+  <ul class="facts">${SUN.facts.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+}
+function bindCalc(o){
+  const wIn=$('#wIn'), aIn=$('#aIn');
+  const upd=()=>{
+    const w=parseFloat(wIn.value); if(w>0){ state.weight=w;
+      const g=(o===SUN?274:o.gravity)/EARTH_G, res=(w*g).toFixed(1);
+      $('#wOut').innerHTML = o===SUN ? `在太陽上你會變成 <b>${res}</b> 公斤……不過你會先被烤焦啦！🔥`
+        : `在${o.name}上，你會變成 <b>${res}</b> 公斤` + (['jupiter','saturn','uranus','neptune'].includes(o.key)?'（假設你能站在雲上）':'') + (g>1.05?' 💪 好重！':g<0.95?' 🦘 好輕！':''); }
+    if(aIn){ const a=parseFloat(aIn.value); if(a>0){ state.age=a; const v=a*365.25/o.period;
+      $('#aOut').innerHTML = `用${o.name}的「年」來算，你是 <b>${v<1?v.toFixed(2):v.toFixed(1)}</b> 歲` + (v<1?'，連一歲都還不到！👶':v>a*1.5?'，一下子長大好多！🎂':''); } }
+  };
+  wIn.oninput=upd; if(aIn) aIn.oninput=upd; upd();
+}
+
+/* ===================== 模式切換 ===================== */
+document.querySelectorAll('nav .mode').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+$('#goReal').onclick=()=>setMode('real');
+function setBodyClass(){ document.body.className='mode-'+state.mode+(state.mode==='real'&&state.real==='dist'?' real-dist':''); }
+function setMode(m){
+  if(state.mode===m) return; const prev=state.mode; state.mode=m;
+  document.querySelectorAll('nav .mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+  setBodyClass(); deselect(); hideHint(); stopLight();
+  if(m==='cosmos'){ enterCosmos(); return; }
+  if(prev==='cosmos'){ showWarp(()=>{ camera.position.copy(homeView().pos).multiplyScalar(1.6); controls.target.copy(homeView().tgt); }); }
+  updateLabelText(); updateRealNote(); startBlend(); flyTo(homeView,2.2);
+}
+function setReal(r){ if(state.real===r) return; state.real=r; $('#rbSize').classList.toggle('on',r==='size'); $('#rbDist').classList.toggle('on',r==='dist');
+  setBodyClass(); deselect(); stopLight(); updateLabelText(); updateRealNote(); startBlend(); flyTo(homeView,2.2); }
+$('#rbSize').onclick=()=>setReal('size'); $('#rbDist').onclick=()=>setReal('dist');
+document.querySelectorAll('.mag').forEach(b=>b.onclick=()=>{ state.mag=+b.dataset.mag; document.querySelectorAll('.mag').forEach(x=>x.classList.toggle('on',x===b)); startBlend(1); updateRealNote(); });
+$('#viewAll').onclick=()=>{ deselect(); flyTo(()=>distView('all'),1.8); };
+$('#viewInner').onclick=()=>{ deselect(); flyTo(()=>distView('inner'),1.8); };
+function updateRealNote(){
+  $('#realNote').innerHTML = state.real==='size'
+    ? '📏 這是<b>真實的大小比例</b>！左邊那面巨大的「牆」就是太陽，它的直徑是地球的 <b>109 倍</b>。<br><small style="color:var(--muted)">（這個模式只比大小，行星之間的距離縮短了。想看真實距離？按「🛣️ 真實距離」）</small>'
+    : (state.mag===1
+      ? '🛣️ 這是<b>真實的距離比例</b>：地球到太陽 1 天文單位（約 1.5 億公里）。在這個比例下，行星<b>小到連一個像素都不到</b>，所以用發光的小點標出位置。試試「行星放大」！'
+      : `🔍 行星現在被放大了 <b>${state.mag} 倍</b>才看得見（太陽沒有放大）。距離仍然是真實比例喔！`);
+}
+$('#btnPlay').onclick=function(){ state.playing=!state.playing; this.classList.toggle('on',state.playing); this.textContent=state.playing?'⏸ 暫停':'▶ 播放'; };
+$('#speed').oninput=function(){ state.speed=parseFloat(this.value); $('#speedVal').textContent=state.speed+'x'; };
+$('#btnOrbit').onclick=function(){ state.showOrbit=!state.showOrbit; this.classList.toggle('on',state.showOrbit); };
+$('#btnLabel').onclick=function(){ state.showLabel=!state.showLabel; this.classList.toggle('on',state.showLabel); labelBox.style.visibility=state.showLabel?'':'hidden'; };
+$('#btnHome').onclick=goHome;
+let hintTimer=setTimeout(hideHint,9000);
+function hideHint(){ $('#hint').style.opacity=0; clearTimeout(hintTimer); }
+
+/* ===================== 和陽光賽跑 ===================== */
+$('#lhList').innerHTML=PLANETS.map(p=>`<li id="lh-${p.key}"><span>${p.name}</span><span>…</span></li>`).join('');
+$('#btnLight').onclick=startLight; $('#lhAgain').onclick=startLight; $('#lhStop').onclick=stopLight;
+document.querySelectorAll('.lm').forEach(b=>b.onclick=()=>{ state.light.mul=+b.dataset.lm; document.querySelectorAll('.lm').forEach(x=>x.classList.toggle('on',x===b)); });
+function startLight(){
+  const L=state.light; L.on=true; L.r=0; L.reached=new Set(); L.autoCam=true; L.done=false; deselect();
+  PLANETS.forEach(p=>{ const li=$('#lh-'+p.key); li.classList.remove('done'); li.lastChild.textContent='…'; });
+  $('#lhMsg').innerHTML='光環就是陽光跑到的地方，看它什麼時候碰到每一顆行星！'; $('#lightHud').classList.add('show');
+  lightRing.visible=true; lightRing.material.opacity=.9;
+  flyTo(()=>({pos:new THREE.Vector3(0,26,20),tgt:new THREE.Vector3(0,0,0)}),1.2);
+}
+function stopLight(){ state.light.on=false; lightRing.visible=false; $('#lightHud').classList.remove('show'); }
+function lightTick(dt){
+  const L=state.light; if(!L.on) return;
+  if(!L.done) L.r += dt*L.mul/499.0;     // 光走 1 天文單位約 499 秒
+  const R=L.r*AUS; lightRing.scale.setScalar(Math.max(R,0.05));
+  const secs=L.r*499.0; $('#lhTime').textContent=fmtSec(secs); $('#lhDist').textContent='離太陽 '+fmtKm(L.r*149.6e6);
+  PLANETS.forEach(p=>{ if(!L.reached.has(p.key) && L.r>=p.au){ L.reached.add(p.key); const li=$('#lh-'+p.key); li.classList.add('done'); li.lastChild.textContent=fmtSec(p.au*499.0).replace(/ 秒$/,'秒').replace(' 小時 ','時').replace(' 分 ','分');
+      p.label.classList.remove('hit'); void p.label.offsetWidth; p.label.classList.add('hit');
+      $('#lhMsg').innerHTML=`✨ 陽光到達<b>${p.name}</b>了！用了 ${fmtSec(p.au*499.0)}。`; } });
+  if(!L.done && L.r>30.2){ L.done=true; $('#lhMsg').innerHTML='🏁 陽光花了大約 <b>4 小時 11 分</b>才到海王星！<br>要到最近的恆星「比鄰星」，光還要再跑 <b>4 年多</b>。去「🔭 宇宙大旅行」看看吧！'; }
+  if(L.autoCam && !state.flight){ const d=Math.max(R*2.4,30); camera.position.lerp(new THREE.Vector3(0,d*.78,d*.62),0.05); controls.target.lerp(new THREE.Vector3(0,0,0),0.05); }
+}
+
+/* ===================== 宇宙大旅行場景 ===================== */
+const cosmos=new THREE.Scene();
+cosmos.add(new THREE.AmbientLight(0xffffff,.35));
+const cDir=new THREE.DirectionalLight(0xffffff,1.1); cDir.position.set(-1,.3,.6); cosmos.add(cDir);
+const cStars=makeStars(); cosmos.add(cStars);
+const cLabelBox=$('#clabels'); const cLabels=[];
+function clabel(obj,html,st){ const el=document.createElement('div'); el.className='lbl clbl'; el.innerHTML=html; cLabelBox.appendChild(el); cLabels.push({obj,el,st}); }
+
+function galaxyPoints(n,R,seed,arms,tw){ const r=rng(seed), g=gaussF(r), pos=[], col=[];
+  for(let i=0;i<n;i++){
+    if(i<n*0.22){ const rr=R*0.16*Math.pow(r(),0.7), th=r()*Math.PI*2, u=r()*2-1, s=Math.sqrt(1-u*u);
+      pos.push(rr*s*Math.cos(th), rr*u*0.55, rr*s*Math.sin(th)); col.push(1,.88,.65); continue; }
+    const rr=R*(0.12+0.88*Math.pow(r(),0.8)), arm=i%arms, th=arm*Math.PI*2/arms + Math.log(1+rr/R*7)*tw + g()*0.28;
+    pos.push(Math.cos(th)*rr+g()*R*.03, g()*R*.018, Math.sin(th)*rr+g()*R*.03);
+    const t=r(); if(t<.06) col.push(1,.45,.65); else if(t<.5) col.push(.62,.75,1); else col.push(.95,.92,1);
+  }
+  return pointCloud(pos,col,R*0.016);
+}
+function blobPoints(n,R,seed,c,flat=.5){ const r=rng(seed), g=gaussF(r), pos=[], col=[];
+  for(let i=0;i<n;i++){ pos.push(g()*R*1.3,g()*R*flat,g()*R); col.push(...c); } return pointCloud(pos,col,R*0.18); }
+
+const ST=[];  // 每站：{group,cam,tgt,update}
+// 0 地球與月球（真實比例：地球半徑 = 2）
+(function(){ const G=new THREE.Group();
+  const earth=new THREE.Mesh(new THREE.SphereGeometry(2,64,32),new THREE.MeshStandardMaterial({map:TEX.earth(),roughness:.8})); G.add(earth);
+  const cl=new THREE.Mesh(new THREE.SphereGeometry(2.05,64,32),new THREE.MeshStandardMaterial({map:TEX.clouds(),transparent:true,depthWrite:false})); G.add(cl);
+  const moonD=384400/6371*2, moon=new THREE.Mesh(new THREE.SphereGeometry(2*1737/6371,48,24),new THREE.MeshStandardMaterial({map:TEX.moon(),roughness:1}));
+  moon.position.set(moonD,0,0); G.add(moon);
+  const orbit=circleLine(moonD,0x8899cc,.25); G.add(orbit);
+  G.add(dashLine(new THREE.Vector3(2.4,0,0),new THREE.Vector3(moonD-0.8,0,0),0x9fb4ff));
+  const artD=406771/6371*2, art=sprite(0xff7aa2,2.2); art.position.set(artD,0,0); G.add(art);
+  const mid=new THREE.Object3D(); mid.position.set(moonD/2,0,0); G.add(mid);
+  clabel(earth,'地球',0); clabel(moon,'月球',0); clabel(mid,'38.4 萬公里<small>中間可以排 30 顆地球</small>',0); clabel(art,'🧑‍🚀 Artemis II 最遠點<small>40.7 萬公里（2026）</small>',0);
+  ST.push({group:G,cam:[moonD*.55,26,92],tgt:[moonD*.52,0,0],update:dt=>{earth.rotation.y+=dt*.2;cl.rotation.y+=dt*.24;}});
+})();
+// 1 太陽系（真實距離：1 天文單位 = 3）
+(function(){ const G=new THREE.Group(); const S=3;
+  const s=sprite(0xffc040,6,{map:glowTex}); G.add(s); clabel(s,'太陽',1);
+  const r=rng(8); PLANETS.forEach(p=>{ G.add(circleLine(p.au*S,0x5577cc,.45)); const a=r()*Math.PI*2; const d=sprite(new THREE.Color(p.color),p.key==='jupiter'||p.key==='saturn'?2.2:1.5);
+    d.position.set(Math.cos(a)*p.au*S,0,-Math.sin(a)*p.au*S); G.add(d); if(['earth','jupiter','saturn','uranus','neptune'].includes(p.key)) clabel(d,p.name,1); });
+  ST.push({group:G,cam:[0,95,125],tgt:[0,0,0],update:dt=>{G.rotation.y+=dt*.03;}});
+})();
+// 2 航海家1號（1 天文單位 = 0.5）
+(function(){ const G=new THREE.Group(); const S=.5;
+  const s=sprite(0xffc040,5,{map:glowTex}); G.add(s); clabel(s,'太陽',2);
+  [5.2,9.6,19.2,30.2].forEach(a=>G.add(circleLine(a*S,0x5577cc,.4)));
+  const nep=new THREE.Object3D(); nep.position.set(30.2*S,0,0); G.add(nep); clabel(nep,'海王星軌道',2);
+  const helio=new THREE.Mesh(new THREE.SphereGeometry(120*S,48,24),new THREE.MeshBasicMaterial({color:0x4a7be8,transparent:true,opacity:.07,side:THREE.DoubleSide,depthWrite:false})); G.add(helio);
+  const hw=new THREE.Mesh(new THREE.SphereGeometry(120*S,24,12),new THREE.MeshBasicMaterial({color:0x6f9bff,wireframe:true,transparent:true,opacity:.08})); G.add(hw);
+  const hl=new THREE.Object3D(); hl.position.set(-120*S*.7,120*S*.72,0); G.add(hl); clabel(hl,'太陽風泡泡的邊界<small>日球層頂（約 120 天文單位）</small>',2);
+  const v1dir=new THREE.Vector3(.82,.52,-.24).normalize(), v1=v1dir.clone().multiplyScalar(173*S);
+  const probe=new THREE.Group(); const dish=new THREE.Mesh(new THREE.CylinderGeometry(1.4,0.3,0.5,24),new THREE.MeshStandardMaterial({color:0xdddddd,metalness:.3,roughness:.5}));
+  dish.rotation.z=Math.PI/2; probe.add(dish); const boom=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,4,6),new THREE.MeshStandardMaterial({color:0xaaaaaa})); boom.rotation.x=Math.PI/2; probe.add(boom);
+  probe.position.copy(v1); probe.lookAt(0,0,0); G.add(probe); const v1g=sprite(0x7ee081,4); v1g.position.copy(v1); G.add(v1g);
+  G.add(dashLine(new THREE.Vector3(0,0,0),v1,0x7ee081));
+  clabel(v1g,'🛰️ 航海家1號<small>1 光日！約 259 億公里</small>',2);
+  const v2=new THREE.Vector3(.45,-.62,.64).normalize().multiplyScalar(152*S); const v2g=sprite(0x9fd3ff,3); v2g.position.copy(v2); G.add(v2g);
+  G.add(dashLine(new THREE.Vector3(0,0,0),v2,0x7aa7ff)); clabel(v2g,'航海家2號',2);
+  ST.push({group:G,cam:[60,45,165],tgt:[25,12,0],update:dt=>{probe.rotation.z+=dt*.2;}});
+})();
+// 3 歐特雲（1 單位 = 1000 天文單位）
+(function(){ const G=new THREE.Group(); const r=rng(31), g=gaussF(r), pos=[], col=[];
+  for(let i=0;i<9000;i++){ const u=r()*2-1, th=r()*Math.PI*2, R=20+80*Math.pow(r(),0.7), s=Math.sqrt(1-u*u); pos.push(R*s*Math.cos(th),R*u,R*s*Math.sin(th)); col.push(.55,.7,1); }
+  for(let i=0;i<3000;i++){ const th=r()*Math.PI*2, R=2+18*Math.pow(r(),.6); pos.push(Math.cos(th)*R,g()*R*.25,Math.sin(th)*R); col.push(.8,.85,1); }
+  const pc=pointCloud(pos,col,.9); pc.material.opacity=.7; G.add(pc);
+  const s=sprite(0xffc040,3,{map:glowTex}); G.add(s); clabel(s,'太陽系在這一點點裡',3);
+  const edge=new THREE.Object3D(); edge.position.set(70,62,0); G.add(edge); clabel(edge,'歐特雲外圍<small>約 10 萬天文單位</small>',3);
+  ST.push({group:G,cam:[0,110,250],tgt:[0,0,0],update:dt=>{G.rotation.y+=dt*.04;}});
+})();
+// 4 半人馬座α
+(function(){ const G=new THREE.Group();
+  const sun2=sprite(0xffc040,12,{map:glowTex}); sun2.position.set(-90,0,0); G.add(sun2); clabel(sun2,'太陽',4);
+  const C=new THREE.Vector3(90,0,0), pair=new THREE.Group(); pair.position.copy(C); G.add(pair);
+  const A=sprite(0xfff0a0,13,{map:glowTex}); A.position.set(2.2,0,0); pair.add(A);
+  const B=sprite(0xffa050,10,{map:glowTex}); B.position.set(-2.6,0,0); pair.add(B);
+  const pc=new THREE.Group(); pc.position.set(81,5,7); G.add(pc);
+  const prox=sprite(0xff5040,6,{map:glowTex}); pc.add(prox); const pb=sprite(0x9fd3ff,1.2); pc.add(pb);
+  clabel(pair,'半人馬座α A 與 B',4); clabel(prox,'⭐ 比鄰星<small>離我們最近的恆星</small>',4);
+  G.add(dashLine(new THREE.Vector3(-84,0,0),new THREE.Vector3(79,4.5,6.3),0xffd166));
+  const mid=new THREE.Object3D(); mid.position.set(0,3,3); G.add(mid); clabel(mid,'4.24 光年<small>約 40 兆公里</small>',4);
+  let t=0; ST.push({group:G,cam:[0,45,175],tgt:[0,0,0],update:dt=>{t+=dt; pair.rotation.y+=dt*.6; pb.position.set(Math.cos(t*1.5)*1.6,0,Math.sin(t*1.5)*1.6);}});
+})();
+// 5 銀河系（1 單位 = 1000 光年）
+(function(){ const G=new THREE.Group(); const gal=galaxyPoints(30000,50,7,4,2.6); G.add(gal);
+  const core=sprite(0xffe0b0,22,{map:glowTex,opacity:.8}); G.add(core);
+  const you=sprite(0xffd166,3.5); const a=2.2; you.position.set(Math.cos(a)*26,0,Math.sin(a)*26); gal.add(you);
+  clabel(you,'☀️ 你在這裡！<small>離中心約 2.6 萬光年</small>',5); clabel(core,'銀河中心<small>有超大質量黑洞</small>',5);
+  ST.push({group:G,cam:[0,72,82],tgt:[0,0,0],update:dt=>{gal.rotation.y+=dt*.03;}});
+})();
+// 6 最近的星系們（1 單位 = 1 萬光年）
+(function(){ const G=new THREE.Group();
+  const mw=galaxyPoints(9000,5,11,4,2.6); G.add(mw); clabel(mw,'銀河系',6);
+  const cma=blobPoints(500,.5,3,[1,.8,.6]); cma.position.set(3.6,-1.1,1.4); G.add(cma); clabel(cma,'大犬座矮星系<small>2.5 萬光年</small>',6);
+  const lmc=blobPoints(1500,1.1,5,[.75,.82,1]); lmc.position.copy(new THREE.Vector3(-.55,-.5,.66).normalize().multiplyScalar(16.3)); G.add(lmc); clabel(lmc,'大麥哲倫雲<small>16.3 萬光年</small>',6);
+  const smc=blobPoints(700,.7,9,[.75,.82,1]); smc.position.copy(new THREE.Vector3(-.4,-.7,.6).normalize().multiplyScalar(20)); G.add(smc); clabel(smc,'小麥哲倫雲',6);
+  const and=galaxyPoints(14000,11,21,2,2.2); and.position.copy(new THREE.Vector3(.93,.12,-.35).normalize().multiplyScalar(250)); and.rotation.set(1.15,0,.4); G.add(and);
+  clabel(and,'🌀 仙女座星系<small>250 萬光年</small>',6);
+  G.add(dashLine(new THREE.Vector3(0,0,0),and.position.clone().multiplyScalar(.95),0xb69cff));
+  mw.material.size=.7; and.material.size=1.6; lmc.material.size=.9; smc.material.size=.8; cma.material.size=.7;
+  [[mw,0xffe0b0,16],[and,0xd8c8ff,40],[lmc,0xbfd0ff,7],[smc,0xbfd0ff,5]].forEach(([o,c,s])=>{ const gl=sprite(c,s,{map:glowTex,opacity:.45}); gl.position.copy(o.position); G.add(gl); });
+  ST.push({group:G,cam:[115,95,225],tgt:[115,10,-40],update:dt=>{mw.rotation.y+=dt*.05;and.rotation.z+=dt*.02;}});
+})();
+// 7 可觀測宇宙（半徑 100）
+(function(){ const G=new THREE.Group(); const r=rng(77), g=gaussF(r), nodes=[], pos=[], col=[];
+  for(let i=0;i<70;i++){ const u=r()*2-1, th=r()*Math.PI*2, R=95*Math.cbrt(r()), s=Math.sqrt(1-u*u); nodes.push(new THREE.Vector3(R*s*Math.cos(th),R*u,R*s*Math.sin(th))); }
+  const palette=[[.75,.6,1],[.5,.7,1],[1,.7,.85]]; const seen=new Set();
+  nodes.forEach((a,i)=>{ const near=nodes.map((b,j)=>[a.distanceTo(b),j]).filter(x=>x[1]!==i).sort((x,y)=>x[0]-y[0]).slice(0,3);
+    near.forEach(([d,j])=>{ const k=i<j?i+'-'+j:j+'-'+i; if(seen.has(k)) return; seen.add(k); const b=nodes[j];
+      for(let t=0;t<110;t++){ const f=r(); pos.push(lerp(a.x,b.x,f)+g()*1.6,lerp(a.y,b.y,f)+g()*1.6,lerp(a.z,b.z,f)+g()*1.6); col.push(...palette[t%3]); } });
+    for(let t=0;t<90;t++){ pos.push(a.x+g()*2.6,a.y+g()*2.6,a.z+g()*2.6); col.push(1,.9,.95); } });
+  const web=pointCloud(pos,col,1.1); web.material.opacity=.8; G.add(web);
+  const shell=new THREE.Mesh(new THREE.SphereGeometry(100,48,24),new THREE.MeshBasicMaterial({color:0x7a4fd0,transparent:true,opacity:.07,side:THREE.BackSide,depthWrite:false})); G.add(shell);
+  const shellW=new THREE.Mesh(new THREE.SphereGeometry(100,24,12),new THREE.MeshBasicMaterial({color:0xb69cff,wireframe:true,transparent:true,opacity:.06})); G.add(shellW);
+  const us=sprite(0xffd166,4); G.add(us); clabel(us,'我們在這裡<small>銀河系小到看不見</small>',7);
+  const mom=sprite(0xff7aa2,4); mom.position.copy(new THREE.Vector3(-.6,.35,.72).normalize().multiplyScalar(72.7)); G.add(mom);
+  G.add(dashLine(new THREE.Vector3(0,0,0),mom.position,0xff7aa2)); clabel(mom,'🔭 最遠的星系 MoM-z14<small>現在約 338 億光年</small>',7);
+  const edge=new THREE.Object3D(); edge.position.set(70,72,0); G.add(edge); clabel(edge,'可觀測宇宙的邊界<small>約 465 億光年</small>',7);
+  ST.push({group:G,cam:[0,70,270],tgt:[0,0,0],update:dt=>{G.rotation.y+=dt*.025;}});
+})();
+ST.forEach(s=>{ s.group.visible=false; cosmos.add(s.group); });
+
+// 宇宙大旅行 UI
+$('#cStops').innerHTML=STATIONS.map((s,i)=>`<button class="stop" data-i="${i}">${s.em.slice(0,2)} ${s.short}</button>`).join('');
+document.querySelectorAll('.stop').forEach(b=>b.onclick=()=>goStation(+b.dataset.i));
+$('#cPrev').onclick=()=>goStation(Math.max(0,state.station-1));
+$('#cNext').onclick=()=>goStation(Math.min(STATIONS.length-1,state.station+1));
+$('#recGrid').innerHTML=RECORDS.map(([e,t,b,d])=>`<div class="card"><div class="em">${e}</div><h4>${t}</h4><div class="big">${b}</div><p>${d}</p></div>`).join('');
+$('#cRecords').onclick=()=>openModal('#recModal');
+function cosmosCard(i){
+  const s=STATIONS[i], prev=i>0?STATIONS[i-1]:null;
+  const stats=s.stats.map(([ic,k,v,n])=>{ if(k.startsWith('搭飛機')) { v=planeTime(s.km); n='一直飛、不休息'; } return `<div class="cstat"><div>${ic}</div><div>${k}：<b>${v}</b>${n?`<span>${n}</span>`:''}</div></div>`; }).join('');
+  const ratio = prev ? `<div class="ratio">🚀 比上一站（${prev.short}）遠了大約 <b>${zhNum(s.km/prev.km)} 倍</b>！</div>` : `<div class="ratio">🚀 準備出發！每往下一站，距離都會變得超級遠。</div>`;
+  return `<div class="em">${s.em}</div><h2>${s.name}</h2><div class="kind">第 ${i+1} 站 · ${s.kind}</div>
+    <span class="badge ${s.badge[1]}">${s.badge[0]}</span>
+    <div class="cstats">${stats}</div>${ratio}
+    <ul class="facts">${s.facts.map(f=>`<li>${f}</li>`).join('')}</ul>
+    <div class="qnav" style="justify-content:space-between">${i>0?`<button class="bigbtn alt" onclick="goStation(${i-1})">◀ 上一站</button>`:'<span></span>'}${i<STATIONS.length-1?`<button class="bigbtn" onclick="goStation(${i+1})">下一站：${STATIONS[i+1].short} ▶</button>`:`<button class="bigbtn" onclick="openModal('#recModal')">🏁 看人類探索極限</button>`}</div>`;
+}
+function showWarp(mid,tag=''){ const w=$('#warp'), z=$('#zoomTag'); w.classList.add('on'); if(tag){z.innerHTML=tag; z.classList.add('on');}
+  setTimeout(()=>{ mid&&mid(); setTimeout(()=>{ w.classList.remove('on'); z.classList.remove('on'); },tag?450:120); },450); }
+function goStation(i,instant=false){
+  const prev=state.station; state.station=i;
+  document.querySelectorAll('.stop').forEach((b,k)=>{ b.classList.toggle('on',k===i); b.classList.toggle('past',k<i); });
+  document.querySelector('.stop.on').scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  $('#cCard').innerHTML=cosmosCard(i); $('#cCard').scrollTop=0;
+  const s=ST[i]; const swap=()=>{ ST.forEach((x,k)=>x.group.visible=k===i);
+    const tgt=new THREE.Vector3(...s.tgt), cam=new THREE.Vector3(...s.cam), dir=cam.clone().sub(tgt);
+    camera.position.copy(tgt.clone().add(dir.multiplyScalar(i>=prev?0.25:3))); controls.target.copy(tgt);
+    flyTo(()=>({pos:new THREE.Vector3(...s.cam),tgt:new THREE.Vector3(...s.tgt)}),1.8); };
+  if(instant) swap(); else showWarp(swap, i>prev?`🚀 往外飛！<br><small style="font-size:18px">比上一站遠 ${zhNum(STATIONS[i].km/STATIONS[i-1>=0?i-1:0].km)} 倍</small>`:'');
+}
+window.goStation=goStation;
+function enterCosmos(){ showWarp(()=>goStation(state.station,true),'🔭 宇宙大旅行出發！'); }
+
+/* ===================== 彈出視窗：冷知識、資料來源、測驗 ===================== */
+$('#factsGrid').innerHTML=SPACE_FACTS.map(([e,t,d])=>`<div class="card"><div class="em">${e}</div><h4>${t}</h4><p>${d}</p></div>`).join('');
+function openModal(id){ $(id).classList.add('open'); } window.openModal=openModal;
+document.querySelectorAll('.modal').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.classList.remove('open'); }); });
+$('#btnFacts').onclick=()=>openModal('#factsModal');
+$('#btnSrc').onclick=()=>openModal('#srcModal');
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open')); });
+
+const quiz={order:[],i:0,score:0,res:[]};
+$('#btnQuiz').onclick=()=>{ startQuiz(); openModal('#quizModal'); };
+function startQuiz(){ quiz.order=QUIZ.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,8); quiz.i=0; quiz.score=0; quiz.res=[]; renderQ(); }
+function renderQ(){
+  const n=quiz.order.length;
+  if(quiz.i>=n){ const s=quiz.score, stars=s>=n?3:s>=n*.6?2:s>=n*.3?1:0;
+    $('#quizBody').innerHTML=`<h2>🏆 測驗完成！</h2><div class="result"><div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div class="score">你答對了 ${s} / ${n} 題</div><p style="font-size:17px">${s===n?'太厲害了！你是太空小博士！🚀':s>=n*.6?'很棒喔！再點點看行星，你會知道更多！':'沒關係！去 3D 太陽系裡逛一逛，再來挑戰一次吧！'}</p></div>
+      <div class="qnav"><button class="bigbtn alt" data-close>回去探索</button><button class="bigbtn" id="again">再玩一次</button></div>`;
+    $('#again').onclick=startQuiz; return; }
+  const Q=QUIZ[quiz.order[quiz.i]];
+  $('#quizBody').innerHTML=`<h2>❓ 太空小測驗</h2>
+    <div class="qprog">${quiz.order.map((_,k)=>`<span class="${k<quiz.i?(quiz.res[k]?'ok':'no'):k===quiz.i?'cur':''}"></span>`).join('')}</div>
+    <div class="qtext">第 ${quiz.i+1} 題：${Q.q}</div>
+    <div class="opts">${Q.o.map((t,k)=>`<button data-k="${k}">${'ABCD'[k]}. ${t}</button>`).join('')}</div>
+    <div class="explain" id="exp"></div>
+    <div class="qnav" id="qnav" style="display:none"><button class="bigbtn alt" id="seeP">🔭 去看看</button><button class="bigbtn" id="next">${quiz.i+1<n?'下一題 →':'看結果 🏆'}</button></div>`;
+  document.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.k, ok=k===Q.a; quiz.res[quiz.i]=ok; if(ok) quiz.score++;
+    document.querySelectorAll('.opts button').forEach(x=>{x.disabled=true; if(+x.dataset.k===Q.a)x.classList.add('right'); else if(x===b)x.classList.add('wrong');});
+    const ex=$('#exp'); ex.style.display='block'; ex.innerHTML=(ok?'✅ <b>答對了！</b> ':'💡 <b>差一點！</b> ')+Q.e;
+    $('#qnav').style.display='flex';
+    $('#next').onclick=()=>{quiz.i++; renderQ();};
+    $('#seeP').onclick=()=>{ $('#quizModal').classList.remove('open'); quiz.i++;
+      if(Q.c!=null){ if(state.mode!=='cosmos'){ state.station=Q.c; setMode('cosmos'); } else goStation(Q.c); return; }
+      const was=state.mode!=='explore'; if(was) setMode('explore'); setTimeout(()=>select(PLANETS.find(p=>p.key===Q.p)),was?2300:50); };
+  });
+}
+
+/* ===================== 動畫迴圈 ===================== */
+function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+addEventListener('resize',resize); resize(); updateRealNote();
+
+const clock=new THREE.Clock();
+const ORBIT_BASE=Math.PI*2/24, SPIN_BASE=0.45;
+function solarTick(dt){
+  const key=layoutKey(), sp=state.playing?state.speed:0;
+  state.blendT=Math.min(1,state.blendT+dt/state.blendDur); const e=ease(state.blendT);
+  const orbiting = key!=='size' && !state.light.on;
+  const st=sunTarget(key);
+  sun.position.x=lerp(sun.from?sun.from.x:st.x,st.x,sun.from?e:1); sun.scale.setScalar(lerp(sun.from?sun.from.s:st.s,st.s,sun.from?e:1));
+  glow.position.copy(sun.position); glow.scale.setScalar(lerp(sun.from?sun.from.g:st.g,st.g,sun.from?e:1)); glow.material.opacity=lerp(sun.from?sun.from.ga:st.ga,st.ga,sun.from?e:1);
+  sunMarker.position.copy(sun.position); sunMarker.material.opacity=lerp(sun.from?sun.from.mk:st.mk,st.mk,sun.from?e:1);
+  sun.rotation.y+=dt*0.05*Math.max(sp,0.2); sunLight.position.copy(sun.position);
+  PLANETS.forEach(p=>{
+    if(orbiting) p.angle += dt*sp*ORBIT_BASE*(365.25/p.period);
+    const t=targetOf(p,key), f=p.from||t, k=p.from?e:1;
+    p.holder.position.set(lerp(f.x,t.x,k),0,lerp(f.z,t.z,k));
+    p.size=lerp(f.size,t.size,k); p.tiltG.scale.setScalar(Math.max(p.size,1e-6));
+    p.line.scale.setScalar(lerp(f.ls,t.ls,k)); p.lineA=lerp(f.la,t.la,k);
+    p.line.visible=state.showOrbit && p.lineA>0.02; p.line.material.opacity=(p===state.selected?.85:.4)*p.lineA;
+    p.marker.material.opacity=lerp(f.mk,t.mk,k);
+    p.mesh.rotation.y += dt*Math.max(sp,0.15)*SPIN_BASE*Math.min(24/p.rot,3);
+    if(p.clouds) p.clouds.rotation.y += dt*Math.max(sp,0.15)*SPIN_BASE*1.15;
+    if(p.moonPivot){ p.moonPivot.rotation.y += dt*sp*ORBIT_BASE*(365.25/27.3)*0.25; p.moonPivot.visible=key==='explore'&&k>0.9; }
+  });
+  const bt=beltTarget(key), bf=belt.from||bt, bk=belt.from?e:1;
+  belt.scale.setScalar(lerp(bf.s,bt.s,bk)); belt.material.opacity=lerp(bf.a,bt.a,bk); belt.visible=belt.material.opacity>0.02;
+  belt.material.size = key==='dist'? .9 : .35;
+  if(orbiting) belt.rotation.y += dt*sp*0.01;
+  lightTick(dt);
+}
+function tick(){
+  const dt=Math.min(clock.getDelta(),0.05);
+  const inCosmos=state.mode==='cosmos';
+  if(inCosmos) ST[state.station].update(dt); else solarTick(dt);
+
+  if(state.flight){ const f=state.flight; f.t+=dt/f.dur; const t=ease(Math.min(f.t,1)); const end=f.getEnd();
+    camera.position.lerpVectors(f.fromPos,end.pos,t); controls.target.lerpVectors(f.fromTgt,end.tgt,t);
+    if(f.t>=1){ state.flight=null; controls.enabled=true; if(f.followObj){ state.follow=f.followObj; objPos(f.followObj,state.lastPos);} } }
+  else if(state.follow && !inCosmos){ objPos(state.follow,tmp); const d=tmp.clone().sub(state.lastPos); camera.position.add(d); controls.target.add(d); state.lastPos.copy(tmp); }
+  controls.update();
+  stars.position.copy(camera.position); cStars.position.copy(camera.position);
+  renderer.render(inCosmos?cosmos:scene,camera);
+
+  const W=innerWidth,H=innerHeight;
+  if(inCosmos){
+    cLabels.forEach(l=>{ if(l.st!==state.station){l.el.style.display='none';return;} l.obj.getWorldPosition(tmp); tmp.project(camera);
+      if(tmp.z>1||tmp.z<-1){l.el.style.display='none';return;} l.el.style.display=''; l.el.style.left=((tmp.x+1)/2*W)+'px'; l.el.style.top=((-tmp.y+1)/2*H-10)+'px'; });
+  } else if(state.showLabel){ const key=layoutKey();
+    [SUN,...PLANETS].forEach(o=>{ const s=objSize(o); objPos(o,tmp);
+      if(o===SUN && key==='size'){ o.label.style.display='none'; return; }
+      tmp.y += key==='dist' ? 0 : s*(o.key==='saturn'||o.key==='uranus'?1.25:1.12)+0.3;
+      tmp.project(camera); if(tmp.z>1||tmp.z<-1){o.label.style.display='none';return;}
+      o.label.style.display=''; o.label.style.left=((tmp.x+1)/2*W)+'px'; o.label.style.top=((-tmp.y+1)/2*H-(key==='dist'?12:0))+'px'; }); }
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body>
+</html>
