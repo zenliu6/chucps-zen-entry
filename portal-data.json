@@ -3,6 +3,7 @@
   "cats": [
     "自然3年級",
     "自然4年級",
+    "天文",
     "工具"
   ],
   "items": [
@@ -19,6 +20,13 @@
       "desc": "4年級上學期光-雷射小遊戲",
       "icon": "💡",
       "cat": "自然4年級"
+    },
+    {
+      "title": "探索太陽系",
+      "url": "https://zenliu6.github.io/chucps-zen-entry/solar/",
+      "desc": "宇宙大冒險",
+      "icon": "🌟",
+      "cat": "天文"
     },
     {
       "title": "抽獎轉盤",
